@@ -1,6 +1,6 @@
 import json
 
-import src.vk as vk
+import src.vk_comments_parser as vk_comments_parser
 from config.settings import LATEST_VK_COMMENTS_FILE_PATH
 from src.logger import logger
 from src.tg import send_vk_comments
@@ -17,12 +17,12 @@ with open(LATEST_VK_COMMENTS_FILE_PATH, "r") as file:
         latest_vk_comments = {}
 
 
-new_vk_comments = vk.get_new_comments(latest_vk_comments)
+new_vk_comments = vk_comments_parser.get_new_comments(latest_vk_comments)
 if new_vk_comments:
     logger.info("New comments found")
     send_vk_comments(new_vk_comments)
     logger.info("New comments sent")
-    updated_latest_comments = vk.update_latest_comments(
+    updated_latest_comments = vk_comments_parser.update_latest_comments(
         latest_vk_comments, new_vk_comments
     )
     logger.info("Latest comments updated")
