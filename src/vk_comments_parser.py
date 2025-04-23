@@ -56,7 +56,6 @@ def get_new_comments(latest_saved_posts, group_id=VK_GROUP_ID, days=7):
                             "last_name"
                         )
                         comment_author_name = f"{comment_author_first_name} {comment_author_last_name}"
-                    logger.info(f"working on {comment_author_name}")
 
                     comment_time = datetime.fromtimestamp(comment["date"])
                     post_new_comments.append(
