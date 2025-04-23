@@ -36,23 +36,35 @@ def get_new_comments(latest_saved_posts, group_id=VK_GROUP_ID, days=7):
             for comment in comments:
                 comment_text = comment["text"]
                 comment_id = comment["id"]
-                # logger.info(f"working on {comment_text}")
                 if comment_text and (
                     not latest_saved_comment_id
                     or comment_id > latest_saved_comment_id
                 ):
                     comment_author_id = comment["from_id"]
-                    comment_author = vk.users.get(user_ids=comment_author_id)[0]
-                    comment_author_first_name = comment_author.get("first_name")
-                    comment_author_last_name = comment_author.get("last_name")
-                    comment_author = f"{comment_author_first_name} {comment_author_last_name}"
+                    if comment_author_id < 0:
+                        comment_author_name = vk.groups.getById(
+                            group_id=abs(comment_author_id)
+                        )[0]["name"]
+                    else:
+                        comment_author = vk.users.get(
+                            user_ids=comment_author_id
+                        )[0]
+                        comment_author_first_name = comment_author.get(
+                            "first_name"
+                        )
+                        comment_author_last_name = comment_author.get(
+                            "last_name"
+                        )
+                        comment_author_name = f"{comment_author_first_name} {comment_author_last_name}"
+                    logger.info(f"working on {comment_author_name}")
+
                     comment_time = datetime.fromtimestamp(comment["date"])
                     post_new_comments.append(
                         {
                             "comment_id": comment_id,
                             "comment_time": comment_time,
                             "text": comment_text,
-                            "author": comment_author,
+                            "author": comment_author_name,
                             "author_id": comment_author_id,
                         }
                     )
@@ -65,7 +77,7 @@ def get_new_comments(latest_saved_posts, group_id=VK_GROUP_ID, days=7):
                         "new_comments": post_new_comments,
                     }
                 )
-            # logger.info(f"Post {post_id} parsed")
+            #logger.info(f"Post {post_id} parsed")
     logger.info("Comments parsed")
     return new_comments
 
