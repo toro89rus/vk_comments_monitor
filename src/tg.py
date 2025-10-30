@@ -1,4 +1,3 @@
-import datetime
 import telebot
 from src.logger import logger
 from config.settings import CHAT_ID, TG_API_TOKEN, VK_GROUP_ID
