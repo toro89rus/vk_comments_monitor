@@ -13,3 +13,5 @@ wheels/
 screenshots/
 storage/
 logs/
+src/ya_maps_monitor
+ya_maps_reviews_monitor.py
