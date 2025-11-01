@@ -5,6 +5,7 @@ from vk_api.exceptions import VkApiError
 
 from config.settings import VK_GROUP_ID, VK_TOKEN
 from src.logger import logger
+from src.redis_setup import r
 
 logger = logger.getChild(__name__)
 
