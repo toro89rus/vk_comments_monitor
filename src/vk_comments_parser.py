@@ -13,7 +13,7 @@ vk_session = vk_api.VkApi(token=VK_TOKEN)
 vk = vk_session.get_api()
 
 
-def main():
+def get_new_comments():
     logger.info("Started new comments collecting")
     recent_posts = get_recent_posts_with_comments()
     new_comments = []
