@@ -1,9 +1,9 @@
 import json
-import redis
 from pathlib import Path
 
 from config.settings import LATEST_VK_COMMENTS_FILE_PATH
 from src.logger import logger
+from src.redis_setup import r
 
 logger = logger.getChild("migration")
 
@@ -14,8 +14,6 @@ def main():
         latest_vk_comments = json.load(file)
 
     logger.info(f"Loaded {len(latest_vk_comments)} records from JSON")
-
-    r = redis.Redis(host="localhost", port=6379, decode_responses=True)
 
     for post_id in latest_vk_comments:
         try:
