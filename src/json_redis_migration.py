@@ -19,7 +19,7 @@ def main():
         try:
             comment_id = latest_vk_comments[post_id]["comment_id"]
             if not r.exists(post_id):
-                r.set(post_id, comment_id, ex=604800)
+                r.set(f"post:last_comment:{post_id}", comment_id, ex=604800)
                 logger.info(f"Migrated post {post_id} → comment {comment_id}")
         except Exception as e:
             logger.error(f"Failed to migrate {post_id}: {e}")

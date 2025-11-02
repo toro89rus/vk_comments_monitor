@@ -58,7 +58,7 @@ def collect_new_comments_for_post(post, group_id=VK_GROUP_ID):
     post_text = f"{post["text"][:100]}..."
     post_date = date.fromtimestamp(post["date"])
     post_new_comments = []
-    last_saved_comment_id = int(r.get(f"posts:last:comment:{post_id}") or 0)
+    last_saved_comment_id = int(r.get(f"post:{post_id}:last_comment_id:") or 0)
     post_comments_response = safe_vk_call(
         vk.wall.getComments,
         owner_id=group_id,
@@ -81,7 +81,7 @@ def collect_new_comments_for_post(post, group_id=VK_GROUP_ID):
             f"Collected post with {len(post_new_comments)} new comments"
         )
         last_comment_id = post_new_comments[-1]["comment_id"]
-        r.set(f"posts:last:comment:{post_id}", last_comment_id, ex=604800)
+        r.set(f"post:{post_id}:last_comment_id", last_comment_id, ex=604800)
         return {
             "post_id": post_id,
             "post_date": post_date,
@@ -106,18 +106,9 @@ def process_comment(comment):
 
 def get_author(author_id):
     if author_id < 0:
-        group_id = abs(author_id)
-        cached_name = r.get(f"groups:names:{str(group_id)}")
-        if cached_name:
-            return cached_name
-        group_response = safe_vk_call(vk.groups.getById, group_id=group_id)
-        if not group_response:
-            return "Неизвестное сообщество"
-        group_name = group_response[0]["name"]
-        r.set(f"groups:names:{group_id}", group_name, ex=604800)
-        return group_response[0]["name"]
+        return get_group_name(author_id)
 
-    cached_name = r.get(f"users_names:{author_id}")
+    cached_name = r.get(f"user:{author_id}:name")
     if cached_name:
         return cached_name
     users_response = safe_vk_call(vk.users.get, user_ids=author_id)
@@ -127,5 +118,18 @@ def get_author(author_id):
     first_name = user.get("first_name")
     last_name = user.get("last_name")
     user_name = f"{first_name} {last_name}"
-    r.set(f"users:names:{author_id}", user_name, ex=604800)
+    r.set(f"user:{author_id}:name", user_name, ex=604800)
     return user_name
+
+
+def get_group_name(id):
+    group_id = abs(id)
+    cached_name = r.get(f"group:{group_id}:name")
+    if cached_name:
+        return cached_name
+    group_response = safe_vk_call(vk.groups.getById, group_id=group_id)
+    if not group_response:
+        return "Неизвестное сообщество"
+    group_name = group_response[0]["name"]
+    r.set(f"group:{group_id}:name:", group_name, ex=604800)
+    return group_response[0]["name"]
