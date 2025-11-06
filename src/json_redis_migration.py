@@ -17,7 +17,7 @@ def main():
     for post_id in latest_vk_comments:
         try:
             comment_id = latest_vk_comments[post_id]["comment_id"]
-            r.set(f"post:last_comment:{post_id}", comment_id, ex=604800)
+            r.set(f"post:{post_id}:last_comment", comment_id, ex=604800)
             logger.info(f"Migrated post {post_id} → comment {comment_id}")
         except Exception as e:
             logger.error(f"Failed to migrate {post_id}: {e}")
