@@ -8,8 +8,8 @@ cron-vk_monitor:
 	$(UV) run -m scripts.vk_comments_monitor
 cron-ya_maps:
 	$(UV) run -m scripts.ya_maps_reviews_monitor
-
-
+test:
+	$(UV) run ruff check 
 
 
 
