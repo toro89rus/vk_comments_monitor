@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 from config.settings import LATEST_VK_COMMENTS_FILE_PATH
 from src.logger import logger

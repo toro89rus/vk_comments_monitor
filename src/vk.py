@@ -1,6 +1,6 @@
 import requests
 
-from config.settings import VK_TOKEN, VK_GROUP_ID
+from config.settings import VK_GROUP_ID, VK_TOKEN
 
 VK_URL = "https://api.vk.ru/method"
 
