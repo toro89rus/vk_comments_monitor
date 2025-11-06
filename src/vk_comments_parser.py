@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 
-import vk
+import src.vk as vk
 from src.logger import logger
 from src.redis_setup import r
 
@@ -25,7 +25,7 @@ def get_new_comments():
 def get_recent_posts_with_comments(days: int = 7) -> list:
     end_date = date.today()
     start_date = end_date - timedelta(days=days)
-    posts = vk.gqet_posts()
+    posts = vk.get_posts()
     recent_posts_with_comments = []
     for post in posts:
         post_date = date.fromtimestamp(post["date"])
