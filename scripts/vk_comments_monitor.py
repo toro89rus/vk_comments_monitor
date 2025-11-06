@@ -8,7 +8,7 @@ logger.info("SCRIPT STARTED")
 
 new_vk_comments = vk_comments_parser.get_new_comments()
 if new_vk_comments:
-    logger.info("New comments found")
+    logger.info(f"Collected {len(new_vk_comments)} posts with new comments")
     send_vk_comments(new_vk_comments)
     logger.info("New comments sent")
 else:

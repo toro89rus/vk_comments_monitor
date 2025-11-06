@@ -83,5 +83,3 @@ def get_groups_names(group_ids):
         return {}
     groups = api_response["response"]["groups"]
     return {group["id"]: group["name"] for group in groups}
-
-
