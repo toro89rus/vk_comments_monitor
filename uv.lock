@@ -163,6 +163,15 @@ wheels = [
 ]
 
 [[package]]
+name = "redis"
+version = "7.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/8f/f125feec0b958e8d22c8f0b492b30b1991d9499a4315dfde466cf4289edc/redis-7.0.1.tar.gz", hash = "sha256:c949df947dca995dc68fdf5a7863950bf6df24f8d6022394585acc98e81624f1", size = 4755322 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e9/97/9f22a33c475cda519f20aba6babb340fb2f2254a02fb947816960d1e669a/redis-7.0.1-py3-none-any.whl", hash = "sha256:4977af3c7d67f8f0eb8b6fec0dafc9605db9343142f634041fb0235f67c0588a", size = 339938 },
+]
+
+[[package]]
 name = "requests"
 version = "2.32.3"
 source = { registry = "https://pypi.org/simple" }
@@ -203,11 +212,11 @@ dependencies = [
     { name = "beautifulsoup4" },
     { name = "dotenv" },
     { name = "playwright" },
+    { name = "redis" },
     { name = "requests" },
     { name = "setuptools" },
     { name = "telebot" },
     { name = "telegram" },
-    { name = "vk-api" },
     { name = "yadisk" },
 ]
 
@@ -216,11 +225,11 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.13.3" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "playwright", specifier = ">=1.50.0" },
+    { name = "redis", specifier = ">=7.0.1" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "setuptools", specifier = ">=75.8.2" },
     { name = "telebot", specifier = ">=0.0.5" },
     { name = "telegram", specifier = ">=0.0.1" },
-    { name = "vk-api", git = "https://github.com/python273/vk_api.git" },
     { name = "yadisk", specifier = ">=3.2.0" },
 ]
 
@@ -259,14 +268,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/aa/63/e53da845320b757bf29ef6a9062f5c669fe997973f966045cb019c3f4b66/urllib3-2.3.0.tar.gz", hash = "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d", size = 307268 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c8/19/4ec628951a74043532ca2cf5d97b7b14863931476d117c471e8e2b1eb39f/urllib3-2.3.0-py3-none-any.whl", hash = "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df", size = 128369 },
-]
-
-[[package]]
-name = "vk-api"
-version = "11.9.9"
-source = { git = "https://github.com/python273/vk_api.git#495ecb73b2e3308cc6e128e376753d5451f95b47" }
-dependencies = [
-    { name = "requests" },
 ]
 
 [[package]]
