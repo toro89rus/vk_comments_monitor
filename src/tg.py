@@ -33,6 +33,6 @@ def send_vk_comments(vk_comments):
 def format_msg(comment):
     time = comment["comment_time"]
     text = comment["text"]
-    author = comment["author"]
+    author = comment["author_name"]
     message = f" Комментарий от {author} {time}\n{text}"
     return message
