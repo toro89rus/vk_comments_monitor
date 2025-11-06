@@ -102,6 +102,3 @@ def add_authors_names(posts, users_ids, groups_ids):
                 comment["author_id"], "Неизвестный автор"
             )
     return posts_with_names
-
-
-print(get_new_comments())
