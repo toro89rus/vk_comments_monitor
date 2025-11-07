@@ -8,12 +8,8 @@ def main():
 
     keys = r.keys()
     for key in keys:
-        post_id = re.search(r"\d+", key).group()
-        value = r.get(f"post:{post_id}:last_comment") or r.get(
-            f"post:{post_id}:last_comment_id"
-        )
-        comment_id = int(value  )
-        save_thread_comment_id(post_id, comment_id, 0)
+        if "last_comment" in key:
+            r.delete(key)
 
     r.close()
     logger.info("Migration completed successfully")

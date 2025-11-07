@@ -175,5 +175,3 @@ def update_group_names_cache(groups):
     for group_id, group_name in groups.items():
         cache.save_group_name(group_id, group_name)
 
-
-print(get_new_comments())
