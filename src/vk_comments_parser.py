@@ -4,6 +4,8 @@ import src.vk as vk
 import src.cache as cache
 from src.logger import logger
 
+import re
+
 
 logger = logger.getChild(__name__)
 
@@ -79,7 +81,10 @@ def collect_new_comments_for_post(post):
 
 def serialize_comment(comment):
     # to-do process text - exclude "спасибо" only text
-    comment_text = comment["text"]
+    if comment.get("reply_to_comment"):
+        comment_text = format_reply_text(comment["text"])
+    else:
+        comment_text = format_comment_text(comment["text"])
     if not comment_text:
         return None
     comment_time = datetime.fromtimestamp(comment["date"])
@@ -174,3 +179,23 @@ def update_user_names_cache(users):
 def update_group_names_cache(groups):
     for group_id, group_name in groups.items():
         cache.save_group_name(group_id, group_name)
+
+
+def format_reply_text(reply_text):
+    match = re.search(r"\[(?:id|club)\d+\|([^\]]+)], (.*)", reply_text)
+    name = match.group(1)
+    text = match.group(2)
+    return f"{name}, {text}" if is_valid_text(text) else None
+
+
+def format_comment_text(comment_text):
+    if not comment_text:
+        return None
+    return comment_text if is_valid_text(comment_text) else None
+
+
+def is_valid_text(text):
+    stripped_text = re.sub(r"[^\u0400-\u04FFa-zA-Z]+", "", text)
+    if not stripped_text:
+        return False
+    return stripped_text.lower() != "спасибо"
