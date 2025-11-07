@@ -8,7 +8,9 @@ logger = logger.getChild(__name__)
 
 def send_ya_maps_reviews(reviews_list):
     bot = telebot.TeleBot(TG_API_TOKEN)
-    bot.send_message(CHAT_ID, f"Привет, новые комментарии: {len(reviews_list)}")
+    bot.send_message(
+        CHAT_ID, f"Привет, новые комментарии: {len(reviews_list)}"
+    )
     for review in reviews_list:
         bot.send_message(
             CHAT_ID, f"Комментарий от {review["date"]}\n{review["text"]}"

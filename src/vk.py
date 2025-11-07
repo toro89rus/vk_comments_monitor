@@ -30,20 +30,23 @@ def get_posts(group_id=VK_GROUP_ID, count=20):
     return api_response["response"]["items"]
 
 
-def get_comments(post_id, last_comment_id, group_id=VK_GROUP_ID, count=100):
+def get_comments(
+    post_id,
+    thread_items_count=10,
+    group_id=VK_GROUP_ID,
+    count=100,
+):
     api_response = make_vk_call(
         "wall.getComments",
         owner_id=group_id,
         post_id=post_id,
         count=count,
         sort="asc",
-        start_comment_id=last_comment_id,
+        thread_items_count=thread_items_count,
     )
     if not api_response:
         return []
     comments = api_response["response"]["items"]
-    if last_comment_id:
-        comments = comments[1:]
     return comments
 
 

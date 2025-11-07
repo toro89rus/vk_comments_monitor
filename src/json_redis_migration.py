@@ -2,7 +2,7 @@ import json
 
 from config.settings import LATEST_VK_COMMENTS_FILE_PATH
 from src.logger import logger
-from src.redis_setup import r
+from src.cache import r
 
 logger = logger.getChild("migration")
 
