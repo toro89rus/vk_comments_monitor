@@ -174,4 +174,3 @@ def update_user_names_cache(users):
 def update_group_names_cache(groups):
     for group_id, group_name in groups.items():
         cache.save_group_name(group_id, group_name)
-
