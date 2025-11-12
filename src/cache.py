@@ -45,6 +45,3 @@ def load_group_name(group_id):
 def save_group_name(group_id, group_name):
     key = _make_redis_key(GROUP_NAME_KEY_TEMPLATE, group_id=group_id)
     r.set(key, group_name, ex=2592000)
-
-
-print(r.keys())

@@ -1,4 +1,4 @@
-import src.vk_comments_parser as vk_comments_parser
+import src.vk.comments_parser as vk_comments_parser
 from src.logger import logger
 from src.tg import send_vk_comments
 

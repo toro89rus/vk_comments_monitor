@@ -1,6 +1,7 @@
 import telebot
 
-from config.settings import CHAT_ID, TG_API_TOKEN, VK_GROUP_ID
+from config.settings import CHAT_ID, TG_API_TOKEN
+from src.vk.classes import Post
 from src.logger import logger
 
 logger = logger.getChild(__name__)
@@ -17,24 +18,9 @@ def send_ya_maps_reviews(reviews_list):
         )
 
 
-def send_vk_comments(vk_comments):
+def send_vk_comments(vk_comments: list[Post]) -> None:
     bot = telebot.TeleBot(TG_API_TOKEN)
     for post in vk_comments:
-        welcome_msg = (
-            f"Новый комментарий к "
-            f"<a href='https://vk.com/tuldramteatr?w=wall{VK_GROUP_ID}_"
-            f"{post["post_id"]}'>посту</a> от {post["post_date"]}"
-            f"\n{post["post_text"]}"
-        )
-        bot.send_message(CHAT_ID, welcome_msg, parse_mode="html")
-        for comment in post["new_comments"]:
-            comment_msg = format_msg(comment)
-            bot.send_message(CHAT_ID, comment_msg)
-
-
-def format_msg(comment):
-    time = comment["created_at_date"]
-    text = comment["text"]
-    author = comment["author_name"]
-    message = f" Комментарий от {author} {time}\n{text}"
-    return message
+        bot.send_message(CHAT_ID, str(post), parse_mode="html")
+        for comment in post.comments:
+            bot.send_message(CHAT_ID, str(comment))

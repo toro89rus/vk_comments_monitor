@@ -85,4 +85,4 @@ def get_groups_names(group_ids):
     if not api_response:
         return {}
     groups = api_response["response"]["groups"]
-    return {-group["id"]: group["name"] for group in groups}
+    return {group["id"]: group["name"] for group in groups}
