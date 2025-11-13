@@ -7,7 +7,7 @@ import src.cache as cache
 
 class Author:
 
-    def __new__(cls, id, name=""):
+    def __new__(cls, id: int, name: str = None):
         if cls is Author:
             if id > 0:
                 return super().__new__(User)
@@ -15,17 +15,14 @@ class Author:
                 return super().__new__(Group)
         return super().__new__(cls)
 
-    def __init__(self, id: int, name: str = ""):
+    def __init__(self, id: int, name: str | None = None):
         self.id: int = abs(id)
-        if not name:
-            if id < 0:
-                name = cache.load_user_name(id) or ""
-            else:
-                name = cache.load_group_name(id) or ""
-        self._name = name
+        self.name: str | None = name
 
     def __str__(self):
-        return self.name
+        if self.name:
+            return self.name
+        return "Имя автора неизвестно"
 
 
 class User(Author):

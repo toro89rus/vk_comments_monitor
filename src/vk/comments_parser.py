@@ -86,16 +86,18 @@ def serialize_comment(vk_comment: dict) -> Comment | None:
         comment_text = format_comment_text(vk_comment["text"])
     if not comment_text:
         return None
-
+    author_name = cache.load_user_name(vk_comment["from_id"])
     kwargs = {
         "id": vk_comment["id"],
         "created_at": datetime.fromtimestamp(vk_comment["date"]),
-        "author": Author(vk_comment["from_id"]),
+        "author": Author(vk_comment["from_id"], author_name),
         "text": comment_text,
     }
 
     if is_reply:
-        reply_to = Author(vk_comment.get("reply_to_user"))
+        reply_to_id = vk_comment["reply_to_user"]
+        reply_to_name = cache.load_user_name(reply_to_id)
+        reply_to = Author(reply_to_id, reply_to_name)
         return Reply(**kwargs, reply_to=reply_to)
     return Comment(**kwargs)
 
