@@ -45,7 +45,9 @@ def collect_new_comments_for_post(post) -> Post:
     post_comments = vk_api.get_comments(post_id)
     for comment in post_comments:
         comment_id = comment["id"]
-        thread_comment_id = cache.load_thread_comment_id(post_id, comment_id)
+        thread_comment_id = int(
+            cache.load_thread_comment_id(post_id, comment_id) or -1
+        )
         if thread_comment_id == -1:
             new_comment = serialize_comment(comment)
             if new_comment:
