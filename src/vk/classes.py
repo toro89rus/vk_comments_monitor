@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+ from dataclasses import dataclass
 from datetime import date, datetime
 
 from config.settings import VK_GROUP_LINK
@@ -6,31 +6,20 @@ import src.cache as cache
 
 
 class Author:
-
-    def __new__(cls, id: int, name: str = None):
-        if cls is Author:
-            if id > 0:
-                return super().__new__(User)
-            else:
-                return super().__new__(Group)
-        return super().__new__(cls)
-
     def __init__(self, id: int, name: str | None = None):
         self.id: int = abs(id)
         self.name: str | None = name
+        if id < 0:
+			self.id = abs(id)
+			self.type = "group"
+		else:
+			self.id = id
+			self.type = "user"
 
     def __str__(self):
         if self.name:
             return self.name
         return "Имя автора неизвестно"
-
-
-class User(Author):
-    pass
-
-
-class Group(Author):
-    pass
 
 
 @dataclass
@@ -39,6 +28,7 @@ class Comment:
     created_at: datetime
     author: User | Group
     text: str
+    replies = list[Reply]
 
     def __str__(self):
         return (
@@ -48,8 +38,13 @@ class Comment:
 
 
 @dataclass
-class Reply(Comment):
+class Reply:
+	id: int
+    created_at: datetime
+    author: User | Group
+    text: str
     reply_to: User | Group
+    reply_on: id
 
     def __str__(self):
         return (

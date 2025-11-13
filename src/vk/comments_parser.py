@@ -49,17 +49,17 @@ def collect_new_comments_for_post(post) -> Post:
             cache.load_thread_comment_id(post_id, comment_id) or -1
         )
         if thread_comment_id == -1:
-            new_comment = serialize_comment(comment)
-            if new_comment:
-                post_new_comments.append(new_comment)
+            serialized_comment = serialize_comment(comment)
+            if serialized_comment:
+                post_new_comments.append(Comment(**serialized_comment))
             cache.save_thread_comment_id(post_id, comment_id, 0)
         if comment["thread"]["count"] > 0:
-            new_thread_comments = collect_new_thread_comments(
-                comment["thread"], thread_comment_id
+            new_replies = collect_new_replies(
+                comment["thread"], comment_id, thread_comment_id
             )
-            if new_thread_comments:
-                post_new_comments.extend(new_thread_comments)
-                last_thread_comment = new_thread_comments[-1]
+            if new_replies:
+                post_new_comments.extend(new_replies)
+                last_thread_comment = new_replies[-1]
                 cache.save_thread_comment_id(
                     post_id, comment_id, last_thread_comment.id
                 )
@@ -78,41 +78,46 @@ def collect_new_comments_for_post(post) -> Post:
 
 
 def serialize_comment(vk_comment: dict) -> Comment | None:
-    is_reply = bool(vk_comment.get("reply_to_user"))
-
-    if is_reply:
-        comment_text = format_reply_text(vk_comment["text"])
-    else:
-        comment_text = format_comment_text(vk_comment["text"])
+	comment_text = format_comment_text(vk_comment["text"])
     if not comment_text:
         return None
     author_name = cache.load_user_name(vk_comment["from_id"])
-    kwargs = {
+    return {
         "id": vk_comment["id"],
         "created_at": datetime.fromtimestamp(vk_comment["date"]),
         "author": Author(vk_comment["from_id"], author_name),
         "text": comment_text,
     }
+    
+def serialize_reply(comment_id, reply):
+	comment_text = format_reply_text(vk_comment["text"])
+	reply_to_id = vk_comment["reply_to_user"]
+    reply_to_name = cache.load_user_name(reply_to_id)
+    reply_to = Author(reply_to_id, reply_to_name)
+    reply_on = comment_id
+    return {
+        "id": vk_comment["id"],
+        "created_at": datetime.fromtimestamp(vk_comment["date"]),
+        "author": Author(vk_comment["from_id"], author_name),
+        "text": comment_text,
+        "reply_to": reply_to
+        "reply_on": comment_id
+    }
 
-    if is_reply:
-        reply_to_id = vk_comment["reply_to_user"]
-        reply_to_name = cache.load_user_name(reply_to_id)
-        reply_to = Author(reply_to_id, reply_to_name)
-        return Reply(**kwargs, reply_to=reply_to)
-    return Comment(**kwargs)
 
-
-def collect_new_thread_comments(thread, thread_last_comment_id: int) -> list:
-    new_thread_comments = []
-    thread_comments = thread["items"]
-    for thread_comment in thread_comments:
-        if thread_comment["id"] > thread_last_comment_id:
-            processed_thread_comment = serialize_comment(thread_comment)
-            if processed_thread_comment:
-                new_thread_comments.append(processed_thread_comment)
+def collect_new_replies(
+	thread, comment_id, thread_last_comment_id: int) 
+	-> list[Reply]:
+    new_replies = []
+    thread_replies = thread["items"]
+    for reply in thread_replies:
+        if reply["id"] > thread_last_comment_id:
+            serialized_reply = serialize_reply(comment_id, reply)
+            if serialized_reply:
+                new_replies.append(Reply(**serialized_reply))
         else:
             break
-    return new_thread_comments
+    return new_replies
 
 
 def collect_author_ids(posts: list[Post]) -> tuple[set]:
