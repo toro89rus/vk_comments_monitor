@@ -2,36 +2,38 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 from config.settings import VK_GROUP_LINK
+import src.cache as cache
 
 
-@dataclass
 class Author:
-    id: int
 
-    @staticmethod
-    def from_id(author_id: int) -> "User | Group":
-        if author_id > 0:
-            return User(id=author_id)
-        else:
-            return Group(id=abs(author_id))
+    def __new__(cls, id, name=""):
+        if cls is Author:
+            if id > 0:
+                return super().__new__(User)
+            else:
+                return super().__new__(Group)
+        return super().__new__(cls)
+
+    def __init__(self, id: int, name: str = ""):
+        self.id: int = abs(id)
+        if not name:
+            if id < 0:
+                name = cache.load_user_name(id) or ""
+            else:
+                name = cache.load_group_name(id) or ""
+        self._name = name
+
+    def __str__(self):
+        return self.name
 
 
-@dataclass
 class User(Author):
-    id: int
-    name: str = ""
-
-    def __str__(self):
-        return self.name
+    pass
 
 
-@dataclass
 class Group(Author):
-    id: int
-    name: str = ""
-
-    def __str__(self):
-        return self.name
+    pass
 
 
 @dataclass
