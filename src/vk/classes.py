@@ -42,15 +42,21 @@ class Comment:
     created_at: datetime
     author: User | Group
     text: str
-    reply_to: int = None
 
     def __str__(self):
-        if self.reply_to:
-            comment_type = "Ответ на комментарий"
-        else:
-            comment_type = "Комментарий"
         return (
-            f"{comment_type} от {self.author.name} {self.created_at}"
+            f"Комментарий от {self.author.name} {self.created_at}"
+            f"\n{self.text}"
+        )
+
+
+@dataclass
+class Reply(Comment):
+    reply_to: User | Group
+
+    def __str__(self):
+        return (
+            f"Ответ на комментарий от {self.author.name} {self.created_at}"
             f"\n{self.text}"
         )
 

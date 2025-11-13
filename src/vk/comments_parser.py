@@ -4,12 +4,12 @@ from datetime import date, datetime, timedelta
 import src.cache as cache
 import src.vk.api as vk_api
 from src.logger import logger
-from src.vk.classes import Author, Comment, Group, Post, User
+from src.vk.classes import Author, Comment, Group, Post, Reply, User
 
 logger = logger.getChild(__name__)
 
 
-def get_new_comments() -> list:
+def get_new_comments() -> list[Post]:
     logger.info("Started new comments collecting")
     recent_posts = get_recent_posts_with_comments()
     posts_with_new_comments = []
@@ -77,23 +77,27 @@ def collect_new_comments_for_post(post) -> Post:
     return None
 
 
-def serialize_comment(vk_comment: dict) -> Comment:
-    reply_to = vk_comment.get("reply_to_user")
-    if reply_to:
+def serialize_comment(vk_comment: dict) -> Comment | None:
+    is_reply = bool(vk_comment.get("reply_to_user"))
+
+    if is_reply:
         comment_text = format_reply_text(vk_comment["text"])
     else:
         comment_text = format_comment_text(vk_comment["text"])
     if not comment_text:
         return None
-    comment_time = datetime.fromtimestamp(vk_comment["date"])
-    author = Author.from_id(vk_comment["from_id"])
-    return Comment(
-        id=vk_comment["id"],
-        created_at=comment_time,
-        author=author,
-        text=comment_text,
-        reply_to=reply_to,
-    )
+
+    kwargs = {
+        "id": vk_comment["id"],
+        "created_at": datetime.fromtimestamp(vk_comment["date"]),
+        "author": Author(vk_comment["from_id"]),
+        "text": comment_text,
+    }
+
+    if is_reply:
+        reply_to = Author(vk_comment.get("reply_to_user"))
+        return Reply(**kwargs, reply_to=reply_to)
+    return Comment(**kwargs)
 
 
 def collect_new_thread_comments(thread, thread_last_comment_id: int) -> list:
