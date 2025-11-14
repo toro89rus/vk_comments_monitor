@@ -1,4 +1,3 @@
-import re
 from datetime import date, datetime, timedelta
 
 import src.cache as cache
@@ -176,3 +175,12 @@ def update_user_names_cache(users):
 def update_group_names_cache(groups):
     for group_id, group_name in groups.items():
         cache.save_group_name(group_id, group_name)
+
+
+def update_comments_cache(posts: list[Post]) -> None:
+    for post in posts:
+        for comment in post.comments:
+            if comment.is_new:
+                cache.proccess_comment(comment.id)
+            if comment.replies:
+                cache.save_last_reply_id(comment.id, comment.replies[-1].id)
