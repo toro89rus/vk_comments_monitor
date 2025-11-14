@@ -24,3 +24,5 @@ def send_vk_comments(vk_comments: list[Post]) -> None:
         bot.send_message(CHAT_ID, str(post), parse_mode="html")
         for comment in post.comments:
             bot.send_message(CHAT_ID, str(comment))
+            for reply in comment.replies:
+                bot.send_message(CHAT_ID, str(reply))

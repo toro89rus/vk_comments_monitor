@@ -1,20 +1,15 @@
- from dataclasses import dataclass
+from dataclasses import dataclass
 from datetime import date, datetime
+from typing import Optional
 
 from config.settings import VK_GROUP_LINK
-import src.cache as cache
 
 
+@dataclass
 class Author:
-    def __init__(self, id: int, name: str | None = None):
-        self.id: int = abs(id)
-        self.name: str | None = name
-        if id < 0:
-			self.id = abs(id)
-			self.type = "group"
-		else:
-			self.id = id
-			self.type = "user"
+    id: int
+    type: str
+    name: str | None = None
 
     def __str__(self):
         if self.name:
@@ -23,34 +18,43 @@ class Author:
 
 
 @dataclass
-class Comment:
+class Reply:
     id: int
     created_at: datetime
-    author: User | Group
+    author: Author
     text: str
-    replies = list[Reply]
+    reply_to: Author
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
-            f"Комментарий от {self.author.name} {self.created_at}"
-            f"\n{self.text}"
+            f"{self.created_at}\n"
+            f"Ответ для {self.reply_to.name} от {self.author.name} \n"
+            f"{self.text}"
         )
 
 
 @dataclass
-class Reply:
-	id: int
+class Comment:
+    id: int
     created_at: datetime
-    author: User | Group
+    author: Author
     text: str
-    reply_to: User | Group
-    reply_on: id
+    replies: list[Reply]
+    is_new: Optional[bool] = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
-            f"Ответ на комментарий от {self.author.name} {self.created_at}"
-            f"\n{self.text}"
+            f"{self.created_at}\n"
+            f"Комментарий от {self.author.name}\n"
+            f"{self.text}"
         )
+
+    def has_new_activity(self) -> bool:
+        if self.is_new and self.text:
+            return True
+        if self.replies:
+            return True
+        return False
 
 
 @dataclass
