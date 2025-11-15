@@ -7,7 +7,7 @@ VK_URL = "https://api.vk.ru/method"
 API_VERSION = "5.199"
 
 
-def make_vk_call(method: str, *args, **params) -> dict:
+def _make_vk_call(method: str, *args, **params) -> dict:
     URL = f"{VK_URL}/{method}"
     params["access_token"] = VK_TOKEN
     params["v"] = API_VERSION
@@ -24,7 +24,7 @@ def make_vk_call(method: str, *args, **params) -> dict:
 
 
 def get_posts(group_id=VK_GROUP_ID, count=20):
-    api_response = make_vk_call("wall.get", owner_id=group_id, count=count)
+    api_response = _make_vk_call("wall.get", owner_id=group_id, count=count)
     if not api_response:
         return []
     return api_response["response"]["items"]
@@ -36,7 +36,7 @@ def get_comments(
     group_id=VK_GROUP_ID,
     count=100,
 ):
-    api_response = make_vk_call(
+    api_response = _make_vk_call(
         "wall.getComments",
         owner_id=group_id,
         post_id=post_id,
@@ -51,7 +51,7 @@ def get_comments(
 
 
 def get_user_name(user_id):
-    api_response = make_vk_call("users.get", user_ids=user_id)
+    api_response = _make_vk_call("users.get", user_ids=user_id)
     if not api_response:
         return "Неизвестный пользователь"
     user = api_response["response"][0]
@@ -62,7 +62,7 @@ def get_user_name(user_id):
 
 
 def get_group_name(group_id):
-    api_response = make_vk_call("groups.getById", group_id=group_id)
+    api_response = _make_vk_call("groups.getById", group_id=group_id)
     if not api_response:
         return "Неизвестное сообщество"
     group_name = api_response["response"]["groups"][0]["name"]
@@ -70,19 +70,26 @@ def get_group_name(group_id):
 
 
 def get_users_names(users_id):
-    api_response = make_vk_call("users.get", user_ids=users_id)
+    api_response = _make_vk_call(
+        "users.get", user_ids=users_id, fields=("sex")
+    )
     if not api_response:
         return {}
     users = api_response["response"]
+    return {user["id"]: _serialize_user_name(user) for user in users}
+
+
+def _serialize_user_name(user):
     return {
-        user["id"]: f"{user.get("first_name")} {user.get("last_name")}"
-        for user in users
+        "first_name": user.get("first_name"),
+        "last_name": user.get("last_name"),
+        "sex": user.get("sex"),
     }
 
 
 def get_groups_names(group_ids):
-    api_response = make_vk_call("groups.getById", group_ids=group_ids)
+    api_response = _make_vk_call("groups.getById", group_ids=group_ids)
     if not api_response:
         return {}
     groups = api_response["response"]["groups"]
-    return {group["id"]: group["name"] for group in groups}
+    return {group["id"]: {"name": group["name"]} for group in groups}

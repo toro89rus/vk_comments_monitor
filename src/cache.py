@@ -5,7 +5,7 @@ r = redis.Redis(host="localhost", port=6379, decode_responses=True)
 
 IS_COMMENT_PROCCESSED_KEY_TEMPLATE = "comment:{comment_id}"
 REPLY_ID_TEMPLATE = "comment:{comment_id}:latest_reply"
-USER_NAME_KEY_TEMPLATE = "user:{user_id}:name"
+USER_TEMPLATE = "user:{user_id}"
 GROUP_NAME_KEY_TEMPLATE = "group:{group_id}:name"
 
 
@@ -13,14 +13,22 @@ def _make_redis_key(template_name: str, **kwargs: dict) -> str:
     return template_name.format(**kwargs)
 
 
-def get_user_name(user_id: int) -> str | None:
-    key = _make_redis_key(USER_NAME_KEY_TEMPLATE, user_id=user_id)
-    return r.get(key)
+def save_user(user_id: int, first_name: str, last_name: str, gender: str):
+    key = _make_redis_key(USER_TEMPLATE, user_id=user_id)
+    r.hset(
+        key,
+        mapping={
+            "first_name": first_name,
+            "last_name": last_name,
+            "gender": gender,
+        },
+    )
+    r.expire(key, 2592000)
 
 
-def save_user_name(user_id: int, user_name: str) -> None:
-    key = _make_redis_key(USER_NAME_KEY_TEMPLATE, user_id=user_id)
-    r.set(key, user_name, ex=2592000)
+def get_user(user_id: int):
+    key = _make_redis_key(USER_TEMPLATE, user_id=user_id)
+    return r.hgetall(key)
 
 
 def get_group_name(group_id: int) -> str | None:

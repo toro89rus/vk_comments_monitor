@@ -9,13 +9,8 @@ def main():
     keys = cache.r.keys()
 
     for key in keys:
-        if key.startswith("post"):
-            comment_id = int(key.split(":")[3])
-            reply_id = int(cache.r.get(key))
-            if reply_id == 0:
-                cache.proccess_comment(comment_id)
-            else:
-                cache.save_last_reply_id(comment_id, reply_id)
+        if key.startswith("user"):
+            cache.r.delete(key)
 
     cache.r.close()
     logger.info("Migration completed successfully")

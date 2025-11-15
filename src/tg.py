@@ -1,7 +1,7 @@
 import telebot
 
 from config.settings import CHAT_ID, TG_API_TOKEN
-from src.vk.classes import Post
+from src.vk.models import Post
 from src.logger import logger
 
 logger = logger.getChild(__name__)

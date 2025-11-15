@@ -112,6 +112,14 @@ wheels = [
 ]
 
 [[package]]
+name = "petrovich"
+version = "2.0.1"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/04/b9/58b45874563e1015925436796235fbaf196947f86d7a441a500e2ea02ef8/Petrovich-2.0.1-py3-none-any.whl", hash = "sha256:d7901a43c6aa3cdedc288eecd0d7e7a061aadb162c7d5d352411c25aec48e288", size = 15572 },
+]
+
+[[package]]
 name = "playwright"
 version = "1.50.0"
 source = { registry = "https://pypi.org/simple" }
@@ -237,6 +245,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "dotenv" },
+    { name = "petrovich" },
     { name = "playwright" },
     { name = "redis" },
     { name = "requests" },
@@ -255,6 +264,7 @@ dev = [
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.13.3" },
     { name = "dotenv", specifier = ">=0.9.9" },
+    { name = "petrovich", specifier = ">=2.0.1" },
     { name = "playwright", specifier = ">=1.50.0" },
     { name = "redis", specifier = ">=7.0.1" },
     { name = "requests", specifier = ">=2.32.3" },

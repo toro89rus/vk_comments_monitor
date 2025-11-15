@@ -3,8 +3,14 @@ from datetime import date, datetime, timedelta
 import src.cache as cache
 import src.vk.api as vk_api
 from src.logger import logger
-from src.vk.classes import Author, Comment, Post, Reply
-from src.vk.text_formatting import format_reply_text, format_comment_text
+from src.vk.models import Comment, Post, Reply
+from src.vk.services import (
+    make_author,
+    map_users_gender,
+    update_user_names_cache,
+    update_group_names_cache,
+)
+from src.vk.text_formatting import format_comment_text, format_reply_text
 
 logger = logger.getChild(__name__)
 
@@ -84,7 +90,7 @@ def get_new_replies(comment) -> list[Reply]:
     return new_replies
 
 
-def serialize_comment(vk_comment: dict) -> Comment | None:
+def serialize_comment(vk_comment: dict) -> dict:
     comment_text = format_comment_text(vk_comment["text"])
     author = make_author(vk_comment["from_id"])
     return {
@@ -95,7 +101,7 @@ def serialize_comment(vk_comment: dict) -> Comment | None:
     }
 
 
-def serialize_reply(vk_reply: dict) -> Reply:
+def serialize_reply(vk_reply: dict) -> dict:
     comment_text = format_reply_text(vk_reply["text"])
     author = make_author(vk_reply["from_id"])
     reply_to = make_author(vk_reply["reply_to_user"])
@@ -115,12 +121,15 @@ def collect_author_ids(posts: list[Post]) -> dict[str, set]:
         for comment in post.comments:
             if not comment.author.name:
                 author_id = comment.author.id
-                author_type_mapping[comment.author.type].add(author_id)
+                author_type_mapping[comment.author.kind].add(author_id)
             for reply in comment.replies:
-                author_id = reply.author.id
-                reply_to_id = reply.reply_to.id
-                author_type_mapping[reply.author.type].add(author_id)
-                author_type_mapping[reply.reply_to.type].add(reply_to_id)
+                if not reply.author.name:
+                    author_id = reply.author.id
+                    author_type_mapping[reply.author.kind].add(author_id)
+
+                if not reply.reply_to.name:
+                    reply_to_id = reply.reply_to.id
+                    author_type_mapping[reply.reply_to.kind].add(reply_to_id)
     return {"users_ids": users_ids, "groups_ids": groups_ids}
 
 
@@ -132,8 +141,9 @@ def add_authors_names(posts: list[Post], authors_ids: dict) -> list[Post]:
 
     if users_to_fetch:
         users = vk_api.get_users_names(users_to_fetch)
-        id_to_name.update(users)
-        update_user_names_cache(users)
+        mapped_users_gender = map_users_gender(users)
+        id_to_name.update(mapped_users_gender)
+        update_user_names_cache(mapped_users_gender)
 
     if groups_to_fetch:
         groups = vk_api.get_groups_names(groups_to_fetch)
@@ -144,43 +154,13 @@ def add_authors_names(posts: list[Post], authors_ids: dict) -> list[Post]:
     for post in posts:
         for comment in post.comments:
             if not comment.author.name:
-                comment.author.name = id_to_name.get(
-                    comment.author.id, "Неизвестный автор"
-                )
+                user_data = id_to_name.get(comment.author.id)
+                comment.author.update(user_data)
             for reply in comment.replies:
                 if not reply.author.name:
-                    reply.author.name = id_to_name.get(
-                        reply.author.id, "Неизвестный автор"
-                    )
+                    user_data = id_to_name.get(reply.author.id)
+                    reply.author.update(user_data)
                 if not reply.reply_to.name:
-                    reply.reply_to.name = id_to_name.get(
-                        reply.reply_to.id, "Неизвестный автор"
-                    )
+                    user_data = id_to_name.get(reply.reply_to.id)
+                    reply.reply_to.update(user_data)
     return posts_with_names
-
-
-def make_author(uid):
-    if uid < 0:
-        return Author(
-            id=abs(uid), name=cache.get_group_name(uid), type="group"
-        )
-    return Author(id=abs(uid), name=cache.get_user_name(uid), type="user")
-
-
-def update_user_names_cache(users):
-    for user_id, user_name in users.items():
-        cache.save_user_name(user_id, user_name)
-
-
-def update_group_names_cache(groups):
-    for group_id, group_name in groups.items():
-        cache.save_group_name(group_id, group_name)
-
-
-def update_comments_cache(posts: list[Post]) -> None:
-    for post in posts:
-        for comment in post.comments:
-            if comment.is_new:
-                cache.proccess_comment(comment.id)
-            if comment.replies:
-                cache.save_last_reply_id(comment.id, comment.replies[-1].id)
