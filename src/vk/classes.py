@@ -14,7 +14,7 @@ class Author:
     def __str__(self):
         if self.name:
             return self.name
-        return "Имя автора неизвестно"
+        return "Неизвестный автор"
 
 
 @dataclass
