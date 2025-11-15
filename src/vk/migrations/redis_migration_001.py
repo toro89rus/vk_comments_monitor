@@ -1,6 +1,5 @@
-from src.logger import logger
-
 import src.cache as cache
+from src.logger import logger
 
 logger = logger.getChild(__name__)
 
