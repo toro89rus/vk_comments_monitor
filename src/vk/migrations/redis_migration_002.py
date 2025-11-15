@@ -5,7 +5,7 @@ logger = logger.getChild(__name__)
 
 
 def main():
-    logger.info(f"Started migration")
+    logger.info("Started migration")
     keys = cache.r.keys()
 
     for key in keys:
