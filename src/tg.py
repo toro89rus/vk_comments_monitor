@@ -2,6 +2,7 @@ import telebot
 
 from config.settings import CHAT_ID, TG_API_TOKEN
 from src.vk.models import Post
+from src.vk.formatters import format_post, format_comment, format_reply
 from src.logger import logger
 
 logger = logger.getChild(__name__)
@@ -21,8 +22,8 @@ def send_ya_maps_reviews(reviews_list):
 def send_vk_comments(vk_comments: list[Post]) -> None:
     bot = telebot.TeleBot(TG_API_TOKEN)
     for post in vk_comments:
-        bot.send_message(CHAT_ID, str(post), parse_mode="html")
+        bot.send_message(CHAT_ID, format_post(post), parse_mode="html")
         for comment in post.comments:
-            bot.send_message(CHAT_ID, str(comment))
+            bot.send_message(CHAT_ID, format_comment(comment))
             for reply in comment.replies:
-                bot.send_message(CHAT_ID, str(reply))
+                bot.send_message(CHAT_ID, format_reply(reply))

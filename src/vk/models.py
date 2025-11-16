@@ -5,7 +5,6 @@ from typing import ClassVar, Optional
 from petrovich.enums import Case, Gender
 from petrovich.main import Petrovich
 
-from config.settings import VK_GROUP_LINK
 
 p = Petrovich()
 
@@ -89,13 +88,6 @@ class Reply:
     text: str
     reply_to: User | Group
 
-    def __str__(self) -> str:
-        return (
-            f"{self.created_at}\n"
-            f"Ответ для {self.reply_to.name_gen} от {self.author.name_gen} \n"
-            f"{self.text}"
-        )
-
 
 @dataclass
 class Comment:
@@ -105,13 +97,6 @@ class Comment:
     text: str
     replies: list[Reply]
     is_new: Optional[bool] = None
-
-    def __str__(self) -> str:
-        return (
-            f"{self.created_at}\n"
-            f"Комментарий от {self.author.name_gen}\n"
-            f"{self.text}"
-        )
 
     def has_new_activity(self) -> bool:
         if self.is_new and self.text:
@@ -127,7 +112,3 @@ class Post:
     created_at: date
     text: str
     comments: list[Comment]
-
-    def __str__(self):
-        link_tag = f"<a href='{VK_GROUP_LINK}_{self.id}'>Пост</a>"
-        return f"{link_tag} от {self.created_at}\n{self.text}"
