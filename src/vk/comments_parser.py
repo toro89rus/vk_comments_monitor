@@ -45,7 +45,7 @@ def get_recent_posts_with_comments(days: int = 7) -> list:
 
 def get_new_comments_for_post(post) -> Post:
     post_id = post["id"]
-    post_text = f"{post['text'][:100]}..."
+    post_text = post["text"]
     post_date = date.fromtimestamp(post["date"])
     post_new_comments = []
     post_comments = vk_api.get_comments(post_id)
