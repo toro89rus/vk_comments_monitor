@@ -5,7 +5,6 @@ from typing import ClassVar, Optional
 from petrovich.enums import Case, Gender
 from petrovich.main import Petrovich
 
-
 p = Petrovich()
 
 
@@ -46,7 +45,7 @@ class User:
     kind: ClassVar[str] = "user"
 
     def _in_case(self, case: Case):
-        if not self.first_name or not self.last_name or not self.gender:
+        if not all((self.first_name, self.last_name, self.gender)):
             return self.name
         first = p.firstname(self.first_name, case, self.gender)
         last = p.lastname(self.last_name, case, self.gender)
