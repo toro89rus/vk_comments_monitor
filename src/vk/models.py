@@ -14,11 +14,22 @@ class Group:
     name: Optional[str] = None
 
     kind: ClassVar[str] = "group"
+    cache: ClassVar[dict] = {}
 
     def __str__(self):
         if self.name:
             return self.name
         return "Неизвестная группа"
+
+    @classmethod
+    def get_existing(cls, gid: int) -> "Group":
+        if gid in cls.cache:
+            return cls.cache[gid]
+        None
+
+    @classmethod
+    def register(cls, group: "Group") -> "Group":
+        cls.cache[group.id] = group
 
     # Родительный
     @property
@@ -41,8 +52,20 @@ class User:
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     gender: Optional[Gender] = None
+    # has_full_name: bool = False ?
 
     kind: ClassVar[str] = "user"
+    cache: ClassVar[dict] = {}
+
+    @classmethod
+    def get_existing(cls, uid: int) -> "User":
+        if uid in cls.cache:
+            return cls.cache[uid]
+        None
+
+    @classmethod
+    def register(cls, user: "User") -> "User":
+        cls.cache[user.id] = user
 
     def _in_case(self, case: Case):
         if not all((self.first_name, self.last_name, self.gender)):
@@ -53,6 +76,7 @@ class User:
 
     @property
     def name(self):
+        # if self.name: return self.name ???
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
         return None

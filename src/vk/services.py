@@ -2,7 +2,7 @@ import src.cache as cache
 from src.vk.models import Group, User, Post
 from petrovich.enums import Gender
 
-GENDER_MAPPING = {1: Gender.FEMALE, 2: Gender.MALE, 0: None}
+VK_TO_PETROVIC_GENDER_MAPPING = {1: Gender.FEMALE, 2: Gender.MALE, 0: None}
 
 
 def make_author(uid: int) -> Group | User:
@@ -23,7 +23,7 @@ def make_author(uid: int) -> Group | User:
 def map_users_gender(users):
     mapped_users = users.copy()
     for user in mapped_users.values():
-        user["gender"] = GENDER_MAPPING[user["sex"]]
+        user["sex"] = VK_TO_PETROVIC_GENDER_MAPPING[user["sex"]]
     return mapped_users
 
 
@@ -40,16 +40,18 @@ def update_comments_cache(posts: list[Post]) -> None:
                 cache.save_last_reply_id(comment.id, comment.replies[-1].id)
 
 
-def update_user_names_cache(users):
-    for user_id, user in users.items():
+def update_user_names_cache(vk_users: list[dict]) -> None:
+    for vk_user in vk_users:
+        user = User.get_existing(vk_user["id"])
         cache.save_user(
-            user_id,
-            user["first_name"],
-            user["last_name"],
-            user["sex"],
+            user.id,
+            user.first_name,
+            user.last_name,
+            user.gender,
         )
 
 
-def update_group_names_cache(groups):
-    for group_id, group in groups.items():
-        cache.save_group_name(group_id, group["name"])
+def update_group_names_cache(vk_groups: dict) -> None:
+    for vk_group in vk_groups:
+        group = Group.get_existing(vk_group["id"])
+        cache.save_group_name(group.id, group.name)

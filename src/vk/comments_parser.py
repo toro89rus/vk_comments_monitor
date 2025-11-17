@@ -1,16 +1,17 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 import src.cache as cache
 import src.vk.api as vk_api
 from src.logger import logger
-from src.vk.models import Comment, Post, Reply
-from src.vk.services import (
-    make_author,
-    map_users_gender,
-    update_user_names_cache,
-    update_group_names_cache,
+from src.vk.mappers import (
+    to_comment_from_vk,
+    to_post_from_vk,
+    to_reply_from_vk,
+    update_users_from_vk,
+    update_groups_from_vk
 )
-from src.vk.text_formatting import format_comment_text, format_reply_text
+from src.vk.models import Comment, Post, Reply
+from src.vk.services import update_group_names_cache, update_user_names_cache
 
 logger = logger.getChild(__name__)
 
@@ -24,9 +25,7 @@ def get_new_comments() -> list[Post]:
             posts_with_new_comments.append(post_new_comments)
     if posts_with_new_comments:
         authors_ids = collect_author_ids(posts_with_new_comments)
-        posts_with_new_comments = add_authors_names(
-            posts_with_new_comments, authors_ids
-        )
+        update_authors_names(authors_ids)
     return posts_with_new_comments
 
 
@@ -43,75 +42,44 @@ def get_recent_posts_with_comments(days: int = 7) -> list:
     return recent_posts_with_comments
 
 
-def get_new_comments_for_post(post) -> Post:
-    post_id = post["id"]
-    post_text = post["text"]
-    post_date = date.fromtimestamp(post["date"])
+def get_new_comments_for_post(vk_post) -> Post:
     post_new_comments = []
-    post_comments = vk_api.get_comments(post_id)
+    post_comments = vk_api.get_comments(vk_post["id"])
+
     for comment in post_comments:
         formatted_comment = format_comment(comment)
         if formatted_comment:
             post_new_comments.append(formatted_comment)
+
     if post_new_comments:
-        return Post(
-            id=post_id,
-            created_at=post_date,
-            text=post_text,
-            comments=post_new_comments,
-        )
+        return to_post_from_vk(vk_post, post_new_comments)
 
     return None
 
 
-def format_comment(comment: dict):
-    is_new = not cache.is_comment_proccessed(comment["id"])
-    formatted_comment = Comment(
-        **serialize_comment(comment), is_new=is_new, replies=[]
-    )
-    if comment["thread"]["count"] > 0:
-        formatted_comment.replies = get_new_replies(comment)
+def format_comment(vk_comment: dict) -> Comment:
+
+    formatted_comment = to_comment_from_vk(vk_comment)
+
+    if vk_comment["thread"]["count"] > 0:
+        formatted_comment.replies = get_new_replies(vk_comment)
     if formatted_comment.has_new_activity():
         return formatted_comment
     return None
 
 
-def get_new_replies(comment) -> list[Reply]:
-    last_reply_id = int(cache.get_last_reply_id(comment["id"]) or 0)
+def get_new_replies(vk_comment) -> list[Reply]:
+    last_reply_id = int(cache.get_last_reply_id(vk_comment["id"]) or 0)
     new_replies = []
-    replies = comment["thread"]["items"]
-    for reply in replies:
+    vk_replies = vk_comment["thread"]["items"]
+    for reply in vk_replies:
         if reply["id"] > last_reply_id:
-            serialized_reply = Reply(**serialize_reply(reply))
+            serialized_reply = to_reply_from_vk(reply)
             if serialized_reply.text:
                 new_replies.append(serialized_reply)
         else:
             break
     return new_replies
-
-
-def serialize_comment(vk_comment: dict) -> dict:
-    comment_text = format_comment_text(vk_comment["text"])
-    author = make_author(vk_comment["from_id"])
-    return {
-        "id": vk_comment["id"],
-        "created_at": datetime.fromtimestamp(vk_comment["date"]),
-        "author": author,
-        "text": comment_text,
-    }
-
-
-def serialize_reply(vk_reply: dict) -> dict:
-    comment_text = format_reply_text(vk_reply["text"])
-    author = make_author(vk_reply["from_id"])
-    reply_to = make_author(vk_reply["reply_to_user"])
-    return {
-        "id": vk_reply["id"],
-        "created_at": datetime.fromtimestamp(vk_reply["date"]),
-        "author": author,
-        "text": comment_text,
-        "reply_to": reply_to,
-    }
 
 
 def collect_author_ids(posts: list[Post]) -> dict[str, set]:
@@ -133,34 +101,19 @@ def collect_author_ids(posts: list[Post]) -> dict[str, set]:
     return {"users_ids": users_ids, "groups_ids": groups_ids}
 
 
-def add_authors_names(posts: list[Post], authors_ids: dict) -> list[Post]:
+def update_authors_names(authors_ids: dict) -> None:
 
-    id_to_name = {}
     users_to_fetch = authors_ids["users_ids"]
     groups_to_fetch = authors_ids["groups_ids"]
 
     if users_to_fetch:
-        users = vk_api.get_users_names(users_to_fetch)
-        mapped_users_gender = map_users_gender(users)
-        id_to_name.update(mapped_users_gender)
-        update_user_names_cache(mapped_users_gender)
+        vk_users = vk_api.get_users_names(users_to_fetch)
+
+        update_users_from_vk(vk_users)
+        update_user_names_cache(vk_users)
 
     if groups_to_fetch:
-        groups = vk_api.get_groups_names(groups_to_fetch)
-        id_to_name.update(groups)
-        update_group_names_cache(groups)
+        vk_groups = vk_api.get_groups_names(groups_to_fetch)
 
-    posts_with_names = posts
-    for post in posts:
-        for comment in post.comments:
-            if not comment.author.name:
-                user_data = id_to_name.get(comment.author.id)
-                comment.author.update(user_data)
-            for reply in comment.replies:
-                if not reply.author.name:
-                    user_data = id_to_name.get(reply.author.id)
-                    reply.author.update(user_data)
-                if not reply.reply_to.name:
-                    user_data = id_to_name.get(reply.reply_to.id)
-                    reply.reply_to.update(user_data)
-    return posts_with_names
+        update_groups_from_vk(vk_groups)
+        update_group_names_cache(vk_groups)

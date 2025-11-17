@@ -17,6 +17,7 @@ def _make_vk_call(method: str, *args, **params) -> dict:
     try:
         r = requests.get(URL, params=params)
         vk_response = r.json()
+    # logging!
     except Exception as exc:
         print(f"Exception - {exc}")
 
@@ -27,6 +28,7 @@ def get_posts(group_id=VK_GROUP_ID, count=20):
     api_response = _make_vk_call("wall.get", owner_id=group_id, count=count)
     if not api_response:
         return []
+    # posts = api_response["response"]["items"] \n return posts
     return api_response["response"]["items"]
 
 
@@ -76,15 +78,7 @@ def get_users_names(users_id):
     if not api_response:
         return {}
     users = api_response["response"]
-    return {user["id"]: _serialize_user_name(user) for user in users}
-
-
-def _serialize_user_name(user):
-    return {
-        "first_name": user.get("first_name"),
-        "last_name": user.get("last_name"),
-        "sex": user.get("sex"),
-    }
+    return users
 
 
 def get_groups_names(group_ids):
@@ -92,4 +86,4 @@ def get_groups_names(group_ids):
     if not api_response:
         return {}
     groups = api_response["response"]["groups"]
-    return {group["id"]: {"name": group["name"]} for group in groups}
+    return groups
