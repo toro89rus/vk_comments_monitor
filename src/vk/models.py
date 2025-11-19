@@ -21,16 +21,6 @@ class Group:
             return self.name
         return "Неизвестная группа"
 
-    @classmethod
-    def get_existing(cls, gid: int) -> "Group":
-        if gid in cls.cache:
-            return cls.cache[gid]
-        None
-
-    @classmethod
-    def register(cls, group: "Group") -> "Group":
-        cls.cache[group.id] = group
-
     # Родительный
     @property
     def name_gen(self):
@@ -56,16 +46,6 @@ class User:
 
     kind: ClassVar[str] = "user"
     cache: ClassVar[dict] = {}
-
-    @classmethod
-    def get_existing(cls, uid: int) -> "User":
-        if uid in cls.cache:
-            return cls.cache[uid]
-        None
-
-    @classmethod
-    def register(cls, user: "User") -> "User":
-        cls.cache[user.id] = user
 
     def _in_case(self, case: Case):
         if not all((self.first_name, self.last_name, self.gender)):
@@ -121,6 +101,7 @@ class Comment:
     replies: list[Reply]
     is_new: Optional[bool] = None
 
+    # @property?
     def has_new_activity(self) -> bool:
         if self.is_new and self.text:
             return True

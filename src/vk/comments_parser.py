@@ -25,7 +25,7 @@ def get_new_comments() -> list[Post]:
             posts_with_new_comments.append(post_new_comments)
     if posts_with_new_comments:
         authors_ids = collect_author_ids(posts_with_new_comments)
-        update_authors_names(authors_ids)
+        update_authors_names_cache(authors_ids)
     return posts_with_new_comments
 
 
@@ -47,9 +47,10 @@ def get_new_comments_for_post(vk_post) -> Post:
     post_comments = vk_api.get_comments(vk_post["id"])
 
     for comment in post_comments:
-        formatted_comment = format_comment(comment)
-        if formatted_comment:
-            post_new_comments.append(formatted_comment)
+        if comment["text"] != "":
+            formatted_comment = format_comment(comment)
+            if formatted_comment:
+                post_new_comments.append(formatted_comment)
 
     if post_new_comments:
         return to_post_from_vk(vk_post, post_new_comments)

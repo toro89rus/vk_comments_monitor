@@ -1,5 +1,6 @@
 import src.cache as cache
-from src.vk.models import Group, User, Post
+from src.vk.models import Post
+from src.vk.registry import authors_registry
 
 
 def update_comments_cache(posts: list[Post]) -> None:
@@ -13,7 +14,7 @@ def update_comments_cache(posts: list[Post]) -> None:
 
 def update_user_names_cache(vk_users: list[dict]) -> None:
     for vk_user in vk_users:
-        user = User.get_existing(vk_user["id"])
+        user = authors_registry.get_existing_user(vk_user["id"])
         cache.save_user(
             user.id,
             user.first_name,
@@ -22,7 +23,7 @@ def update_user_names_cache(vk_users: list[dict]) -> None:
         )
 
 
-def update_group_names_cache(vk_groups: dict) -> None:
+def update_group_names_cache(vk_groups: list[dict]) -> None:
     for vk_group in vk_groups:
-        group = Group.get_existing(vk_group["id"])
+        group = authors_registry.get_existing_group(vk_group["id"])
         cache.save_group_name(group.id, group.name)

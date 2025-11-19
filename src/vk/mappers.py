@@ -5,6 +5,7 @@ from petrovich.enums import Gender
 import src.cache as cache
 from src.vk.models import Comment, Group, Post, Reply, User
 from src.vk.text_formatting import format_comment_text, format_reply_text
+from src.vk.registry import authors_registry
 
 VK_TO_PETROVIC_GENDER_MAPPING = {1: Gender.FEMALE, 2: Gender.MALE, 0: None}
 
@@ -52,23 +53,23 @@ def to_author_from_id(uid: int) -> Group | User:
 
 
 def _make_group(gid: int) -> Group:
-    cached_local_group = Group.get_existing(gid)
+    cached_local_group = authors_registry.get_existing_group(gid)
     if cached_local_group:
         return cached_local_group
 
     cached_external_group_name = cache.get_group_name(gid)
     if cached_external_group_name:
         group = Group(gid, cached_external_group_name)
-        Group.register(group)
+        authors_registry.register_group(group)
         return group
 
     group = Group(gid)
-    Group.register(group)
+    authors_registry.register_group(group)
     return group
 
 
 def _make_user(uid: int) -> User:
-    cached_local_user = User.get_existing(uid)
+    cached_local_user = authors_registry.get_existing_user(uid)
     if cached_local_user:
         return cached_local_user
 
@@ -78,17 +79,17 @@ def _make_user(uid: int) -> User:
         last_name = cached_external_user["last_name"]
         gender = cached_external_user["gender"]
         user = User(uid, first_name, last_name, gender)
-        User.register(user)
+        authors_registry.register_user(user)
         return user
 
     user = User(uid)
-    User.register(user)
+    authors_registry.register_user(user)
     return user
 
 
 def update_users_from_vk(vk_users: dict) -> None:
     for vk_user in vk_users:
-        user = User.get_existing(vk_user["id"])
+        user = authors_registry.get_existing_user(vk_user["id"])
         # raise exception - didn't get user but there shouldn't be new users
         # at this point
         data = {
@@ -101,7 +102,7 @@ def update_users_from_vk(vk_users: dict) -> None:
 
 def update_groups_from_vk(vk_groups: dict) -> None:
     for vk_group in vk_groups:
-        group = Group.get_existing(vk_group["id"])
+        group = authors_registry.get_existing_group(vk_group["id"])
         # raise exception - didn't get group but there shouldn't be new groups
         # at this point
         group.update(vk_group)
