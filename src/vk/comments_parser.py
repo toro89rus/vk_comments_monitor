@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-import src.cache as cache
+from src.repository import repo
 import src.vk.api as vk_api
 from src.logger import logger
 from src.vk.mappers import (
@@ -25,7 +25,7 @@ def get_new_comments() -> list[Post]:
             posts_with_new_comments.append(post_new_comments)
     if posts_with_new_comments:
         authors_ids = collect_author_ids(posts_with_new_comments)
-        update_authors_names_cache(authors_ids)
+        update_authors_names(authors_ids)
     return posts_with_new_comments
 
 
@@ -70,7 +70,7 @@ def format_comment(vk_comment: dict) -> Comment:
 
 
 def get_new_replies(vk_comment) -> list[Reply]:
-    last_reply_id = int(cache.get_last_reply_id(vk_comment["id"]) or 0)
+    last_reply_id = int(repo.get_last_reply_id(vk_comment["id"]) or 0)
     new_replies = []
     vk_replies = vk_comment["thread"]["items"]
     for reply in vk_replies:

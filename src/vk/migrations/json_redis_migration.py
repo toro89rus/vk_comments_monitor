@@ -2,7 +2,7 @@ import json
 
 from config.settings import LATEST_VK_COMMENTS_FILE_PATH
 from src.logger import logger
-from src.cache import r
+from src.repository import r
 
 logger = logger.getChild("migration")
 

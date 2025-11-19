@@ -1,4 +1,4 @@
-import src.cache as cache
+import src.repository as repository
 from src.logger import logger
 
 logger = logger.getChild(__name__)
@@ -6,14 +6,14 @@ logger = logger.getChild(__name__)
 
 def main():
     logger.info("Started migration")
-    keys = cache.r.keys()
+    keys = repository.r.keys()
 
     for key in keys:
         if key.endswith("thread_comment"):
             logger.info(f"Deleting {key}")
-            cache.r.delete(key)
+            repository.r.delete(key)
 
-    cache.r.close()
+    repository.r.close()
     logger.info("Migration completed successfully")
 
 

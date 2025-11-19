@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from petrovich.enums import Gender
 
-import src.cache as cache
+from src.repository import repo
 from src.vk.models import Comment, Group, Post, Reply, User
 from src.vk.text_formatting import format_comment_text, format_reply_text
 from src.vk.registry import authors_registry
@@ -25,7 +25,7 @@ def make_message_entity(
 
     if model_cls is Comment:
         base["replies"] = []
-        base["is_new"] = not cache.is_comment_proccessed(data["id"])
+        base["is_new"] = not repo.is_comment_proccessed(data["id"])
         base["text"] = format_comment_text(data["text"])
 
     if model_cls is Reply:
@@ -57,7 +57,7 @@ def _make_group(gid: int) -> Group:
     if cached_local_group:
         return cached_local_group
 
-    cached_external_group_name = cache.get_group_name(gid)
+    cached_external_group_name = repo.get_group_name(gid)
     if cached_external_group_name:
         group = Group(gid, cached_external_group_name)
         authors_registry.register_group(group)
@@ -73,7 +73,7 @@ def _make_user(uid: int) -> User:
     if cached_local_user:
         return cached_local_user
 
-    cached_external_user = cache.get_user(uid)
+    cached_external_user = repo.get_user(uid)
     if cached_external_user:
         first_name = cached_external_user["first_name"]
         last_name = cached_external_user["last_name"]
