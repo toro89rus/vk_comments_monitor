@@ -47,10 +47,9 @@ def get_new_comments_for_post(vk_post) -> Post:
     post_comments = vk_api.get_comments(vk_post["id"])
 
     for comment in post_comments:
-        if comment["text"] != "":
-            formatted_comment = format_comment(comment)
-            if formatted_comment:
-                post_new_comments.append(formatted_comment)
+        formatted_comment = format_comment(comment)
+        if formatted_comment:
+            post_new_comments.append(formatted_comment)
 
     if post_new_comments:
         return to_post_from_vk(vk_post, post_new_comments)
@@ -70,7 +69,7 @@ def format_comment(vk_comment: dict) -> Comment:
 
 
 def get_new_replies(vk_comment) -> list[Reply]:
-    last_reply_id = int(repo.get_last_reply_id(vk_comment["id"]) or 0)
+    last_reply_id = repo.get_last_reply_id(vk_comment["id"]) or 0
     new_replies = []
     vk_replies = vk_comment["thread"]["items"]
     for reply in vk_replies:
