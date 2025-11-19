@@ -1,34 +1,5 @@
 import src.cache as cache
 from src.vk.models import Group, User, Post
-from petrovich.enums import Gender
-
-VK_TO_PETROVIC_GENDER_MAPPING = {1: Gender.FEMALE, 2: Gender.MALE, 0: None}
-
-
-def make_author(uid: int) -> Group | User:
-
-    if uid < 0:
-        return Group(id=abs(uid), name=cache.get_group_name(uid))
-
-    cached_user = cache.get_user(uid)
-    if cached_user:
-        first_name = cached_user["first_name"]
-        last_name = cached_user["last_name"]
-        gender = cached_user["gender"]
-        return User(id, first_name, last_name, gender)
-
-    return User(id=uid)
-
-
-def map_users_gender(users):
-    mapped_users = users.copy()
-    for user in mapped_users.values():
-        user["sex"] = VK_TO_PETROVIC_GENDER_MAPPING[user["sex"]]
-    return mapped_users
-
-
-def update_user(user: dict) -> None:
-    pass
 
 
 def update_comments_cache(posts: list[Post]) -> None:
