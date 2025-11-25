@@ -4,8 +4,8 @@ from petrovich.enums import Gender
 
 from src.repository import repo
 from src.vk.models import Comment, Group, Post, Reply, User
-from src.vk.text_formatting import format_comment_text, format_reply_text
 from src.vk.registry import authors_registry
+from src.vk.text_formatting import format_comment_text, format_reply_text
 
 VK_TO_PETROVIC_GENDER_MAPPING = {1: Gender.FEMALE, 2: Gender.MALE, 0: None}
 
@@ -25,7 +25,7 @@ def make_message_entity(
 
     if model_cls is Comment:
         base["replies"] = []
-        base["is_new"] = not repo.is_comment_proccessed(data["id"])
+        base["is_new"] = not repo.is_comment_processed(data["id"])
         base["text"] = format_comment_text(data["text"])
 
     if model_cls is Reply:
@@ -128,7 +128,4 @@ def to_user_from_vk(vk_user: dict) -> User:
 
 
 def to_group_from_vk(vk_group: dict) -> Group:
-    return Group(
-        id=vk_group["id"],
-        name=vk_group["name"]
-    )
+    return Group(id=vk_group["id"], name=vk_group["name"])

@@ -7,7 +7,7 @@ def update_comments_cache(posts: list[Post]) -> None:
     for post in posts:
         for comment in post.comments:
             if comment.is_new:
-                repo.proccess_comment(comment.id)
+                repo.process_comment(comment.id)
             if comment.replies:
                 repo.save_last_reply_id(comment.id, comment.replies[-1].id)
 
