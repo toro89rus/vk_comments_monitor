@@ -21,4 +21,9 @@ def is_valid_text(text):
     stripped_text = re.sub(r"[^\u0400-\u04FFa-zA-Z]+", "", text)
     if not stripped_text:
         return False
-    return stripped_text.lower() != "спасибо"
+    if stripped_text.lower() == "спасибо":
+        return False
+    match = re.search(r"дн[е/ё]мрождения", stripped_text, re.IGNORECASE)
+    if match:
+        return False
+    return True
