@@ -40,11 +40,12 @@ class Repository:
 
     def get_group_name(self, group_id: int) -> str | None:
         key = make_redis_key(GROUP_NAME_KEY_TEMPLATE, group_id=group_id)
-        return self.r.get(key)
+        return self.r.hget(key, "name")
 
     def save_group_name(self, group_id: int, group_name: str) -> None:
         key = make_redis_key(GROUP_NAME_KEY_TEMPLATE, group_id=group_id)
-        self.r.set(key, group_name, ex=USER_TTL)
+        self.r.set(key, "name", group_name)
+        self.r.expire(key, USER_TTL)
 
     def is_comment_processed(self, comment_id: int) -> bool:
         key = make_redis_key(COMMENT_TEMPLATE, comment_id=comment_id)
