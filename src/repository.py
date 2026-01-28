@@ -5,7 +5,7 @@ USER_TEMPLATE = "user:{user_id}"
 GROUP_NAME_KEY_TEMPLATE = "group:{group_id}:name"
 
 USER_TTL = 2592000
-COMMENT_TTL = 604800
+COMMENT_TTL = 8 * 24 * 60 * 60
 
 
 def make_redis_key(template_name: str, **kwargs: dict) -> str:
