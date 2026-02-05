@@ -17,3 +17,4 @@ src/ya_maps_monitor
 ya_maps_reviews_monitor.py
 vk_config.v2.json
 *.geany
+assets/
