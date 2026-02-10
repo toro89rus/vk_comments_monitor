@@ -1,7 +1,7 @@
-from src.vk.comments_parser import get_new_comments
-from src.vk.services import update_comments_cache
-from src.logger import logger
-from src.tg import send_vk_comments
+from tatd_bot.vk.comments_parser import get_new_comments
+from tatd_bot.vk.services import update_comments_cache
+from tatd_bot.logger import logger
+from tatd_bot.tg import send_vk_comments
 
 logger = logger.getChild("vk_comments")
 

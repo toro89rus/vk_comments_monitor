@@ -1,6 +1,6 @@
 import redis
 
-from src.logger import logger
+from tatd_bot.logger import logger
 
 logger = logger.getChild(__name__)
 

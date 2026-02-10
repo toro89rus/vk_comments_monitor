@@ -1,5 +1,5 @@
-from src.vk.models import Post, Comment, Reply
-from config.settings import VK_GROUP_LINK
+from tatd_bot.vk.models import Post, Comment, Reply
+from tatd_bot.config.settings import VK_GROUP_LINK
 
 
 def format_post(post: Post) -> str:

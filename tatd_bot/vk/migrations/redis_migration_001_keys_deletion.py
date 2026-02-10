@@ -1,5 +1,5 @@
-import src.repository as repository
-from src.logger import logger
+import tatd_bot.repository as repository
+from tatd_bot.logger import logger
 
 logger = logger.getChild(__name__)
 

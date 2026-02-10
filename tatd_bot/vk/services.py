@@ -1,6 +1,6 @@
-from src.repository import repo
-from src.vk.models import Post
-from src.vk.registry import authors_registry
+from tatd_bot.repository import repo
+from tatd_bot.vk.models import Post
+from tatd_bot.vk.registry import authors_registry
 
 
 def update_comments_cache(posts: list[Post]) -> None:

@@ -1,4 +1,4 @@
-from src.vk.models import Group, User
+from tatd_bot.vk.models import Group, User
 from dataclasses import dataclass, field
 
 

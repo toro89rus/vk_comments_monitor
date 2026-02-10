@@ -1,0 +1,18 @@
+services:
+
+  tatd_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["make", "run"]
+    env_file:
+      - .env
+    environment:
+      - REDIS=REDIS
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    restart: always

@@ -9,7 +9,11 @@ cron-vk_monitor:
 cron-ya_maps:
 	$(UV) run -m scripts.ya_maps_reviews_monitor
 test:
-	$(UV) run ruff check 
+	$(UV) run ruff check
 
+install:
+	uv sync
 
+run:
+	uv run -m tatd_bot.bot
 

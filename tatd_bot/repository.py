@@ -1,5 +1,11 @@
+import time
+
 import redis
 
+from tatd_bot.config.settings import REDIS_HOST
+
+SUBSCRIBERS_SET = "subscribers"
+PENDING_SUBSCRIBERS_ZSET = "pending_subscribers"
 COMMENT_TEMPLATE = "comment:{comment_id}"
 USER_TEMPLATE = "user:{user_id}"
 GROUP_NAME_KEY_TEMPLATE = "group:{group_id}:name"
@@ -15,9 +21,7 @@ def make_redis_key(template_name: str, **kwargs: dict) -> str:
 class Repository:
 
     def __init__(self):
-        self.r = redis.Redis(
-            host="localhost", port=6379, decode_responses=True
-        )
+        self.r = redis.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
 
     def get_user(self, user_id: int) -> dict[str, str]:
         key = make_redis_key(USER_TEMPLATE, user_id=user_id)
@@ -67,6 +71,34 @@ class Repository:
         value = self.r.hget(key, "last_reply_id")
         if value:
             return int(value)
+        return None
+
+    def add_subscriber(self, chat_id: int) -> None:
+        self.r.sadd(SUBSCRIBERS_SET, chat_id)
+
+    def remove_subscriber(self, chat_id: int) -> None:
+        self.r.srem(SUBSCRIBERS_SET, chat_id)
+
+    def is_subscriber(self, chat_id: int) -> bool:
+        return bool(self.r.sismember(SUBSCRIBERS_SET, chat_id))
+
+    def get_subscribers(self) -> list:
+        subscribers = self.r.smembers(SUBSCRIBERS_SET)
+        return [int(subscriber) for subscriber in subscribers]
+
+    def add_pending_subscriber(self, chat_id: int) -> None:
+        self.r.zadd(PENDING_SUBSCRIBERS_ZSET, {chat_id: time.time()})
+
+    def remove_pending_subscriber(self, chat_id: int) -> None:
+        self.r.zrem(PENDING_SUBSCRIBERS_ZSET, chat_id)
+
+    def is_pending_subscriber(self, chat_id: int) -> bool:
+        return bool(self.r.zscore(PENDING_SUBSCRIBERS_ZSET, chat_id))
+
+    def get_pending_subscribers(self) -> list | None:
+        pending_subscribers = self.r.zrange(PENDING_SUBSCRIBERS_ZSET, 0, -1)
+        if pending_subscribers:
+            return [int(chat_id) for chat_id in pending_subscribers]
         return None
 
 

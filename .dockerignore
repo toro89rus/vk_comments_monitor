@@ -1,0 +1,9 @@
+.git/
+.ruff_cahe/
+.venv/
+assets/
+logs/
+screenshots/
+storage/
+.env
+.gitignore/

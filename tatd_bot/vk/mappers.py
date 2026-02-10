@@ -2,10 +2,10 @@ from datetime import date, datetime
 
 from petrovich.enums import Gender
 
-from src.repository import repo
-from src.vk.models import Comment, Group, Post, Reply, User
-from src.vk.registry import authors_registry
-from src.vk.text_formatting import format_comment_text, format_reply_text
+from tatd_bot.repository import repo
+from tatd_bot.vk.models import Comment, Group, Post, Reply, User
+from tatd_bot.vk.registry import authors_registry
+from tatd_bot.vk.text_formatting import format_comment_text, format_reply_text
 
 VK_TO_PETROVIC_GENDER_MAPPING = {1: Gender.FEMALE, 2: Gender.MALE, 0: None}
 
