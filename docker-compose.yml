@@ -1,7 +1,9 @@
 services:
 
   tatd_bot:
-    build: https://github.com/toro89rus/vk_comments_monitor.git
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: ["make", "run"]
     env_file:
       - .env
