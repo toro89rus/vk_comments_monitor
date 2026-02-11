@@ -16,3 +16,8 @@ services:
   redis:
     image: redis:latest
     restart: always
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
