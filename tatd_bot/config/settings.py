@@ -19,4 +19,4 @@ VK_GROUP_ID = "-48164678"
 VK_GROUP_NAME = "tuldramteatr"
 VK_GROUP_LINK = f"https://vk.com/{VK_GROUP_NAME}?w=wall{VK_GROUP_ID}"
 
-VK_MONITOR_UPDATE_DELAY = int(os.getenv("VK_MONITOR_DELAY"))
+VK_MONITOR_UPDATE_DELAY = int(os.getenv("VK_MONITOR_UPDATE_DELAY"))
