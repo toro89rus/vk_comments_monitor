@@ -13,6 +13,7 @@ from tatd_bot.vk.comments_parser import get_new_comments
 from tatd_bot.vk.formatters import format_comment, format_post, format_reply
 from tatd_bot.vk.models import Post
 from tatd_bot.vk.services import update_comments_cache
+from tatd_bot.config.settings import VK_MONITOR_UPDATE_DELAY
 
 logger = logger.getChild("telegram_bot")
 
@@ -103,4 +104,4 @@ async def monitor_vk_comments():
         else:
             logger.info("No new comments found")
         logger.info("Finished comments monitoring")
-        await asyncio.sleep(60 * 5)
+        await asyncio.sleep(VK_MONITOR_UPDATE_DELAY)
