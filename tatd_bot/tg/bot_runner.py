@@ -57,6 +57,9 @@ async def process_subscribe_button(message: Message):
         )
         text = f"Заявка от {message.from_user.full_name}"
         await tatd_bot.send_message(ADMIN_ID, text=text, reply_markup=keyboard)
+        await message.answer(
+            "Заявка отправлена. Я сообщу когда она будет обработана"
+        )
 
 
 @dp.message(F.text == "Отписаться")
