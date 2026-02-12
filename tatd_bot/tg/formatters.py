@@ -9,7 +9,7 @@ def _format_date(timestamp: datetime):
 
 
 def _format_datetime(timestamp: datetime):
-    return timestamp.replace(tzinfo=None).strftime(DATETIME_FORMAT)
+    return timestamp.strftime(DATETIME_FORMAT)
 
 
 def format_post(post: Post) -> str:
@@ -20,7 +20,7 @@ def format_post(post: Post) -> str:
 
 def format_comment(comment: Comment) -> str:
     return (
-        f"{comment.created_at}\n"
+        f"{_format_datetime(comment.created_at)}\n"
         f"Комментарий от {comment.author.name_gen}\n"
         f"{comment.text}"
     )
