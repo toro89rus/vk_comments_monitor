@@ -1,17 +1,20 @@
 from datetime import date, timedelta
 
-from tatd_bot.repository import repo
 import tatd_bot.vk.api as vk_api
 from tatd_bot.logger import logger
+from tatd_bot.repository import repo
 from tatd_bot.vk.mappers import (
     to_comment_from_vk,
     to_post_from_vk,
     to_reply_from_vk,
+    update_groups_from_vk,
     update_users_from_vk,
-    update_groups_from_vk
 )
 from tatd_bot.vk.models import Comment, Post, Reply
-from tatd_bot.vk.services import update_group_names_cache, update_user_names_cache
+from tatd_bot.vk.services import (
+    update_group_names_cache,
+    update_user_names_cache,
+)
 
 logger = logger.getChild(__name__)
 

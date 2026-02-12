@@ -1,4 +1,6 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
+from zoneinfo import ZoneInfo
+
 
 from petrovich.enums import Gender
 
@@ -35,10 +37,16 @@ def make_message_entity(
     return model_cls(**base)
 
 
+def _get_msk_time(timestamp: float):
+    dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    dt_msk = dt.astimezone(ZoneInfo("Europe/Moscow"))
+    return dt_msk
+
+
 def parse_base(data: dict) -> dict:
     return {
         "id": data["id"],
-        "created_at": datetime.fromtimestamp(data["date"]),
+        "created_at": _get_msk_time(data["date"]),
         "author": to_author_from_id(data["from_id"]),
     }
 
