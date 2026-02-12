@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 
@@ -117,10 +117,9 @@ def update_groups_from_vk(vk_groups: dict) -> None:
 
 
 def to_post_from_vk(vk_post: dict, comments: list[Comment]) -> Post:
-    post_date = date.fromtimestamp(vk_post["date"])
     return Post(
         id=vk_post["id"],
-        created_at=post_date,
+        created_at=_get_msk_time(vk_post["date"]),
         text=vk_post["text"],
         comments=comments,
     )

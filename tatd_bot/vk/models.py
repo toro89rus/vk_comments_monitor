@@ -113,6 +113,6 @@ class Comment:
 @dataclass
 class Post:
     id: int
-    created_at: date
+    created_at: datetime
     text: str
     comments: list[Comment]
