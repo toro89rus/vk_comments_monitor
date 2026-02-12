@@ -10,7 +10,7 @@ from tatd_bot.config.settings import ADMIN_ID, TG_API_TOKEN
 from tatd_bot.logger import logger
 from tatd_bot.repository import repo
 from tatd_bot.vk.comments_parser import get_new_comments
-from tatd_bot.vk.formatters import format_comment, format_post, format_reply
+from tatd_bot.tg.formatters import format_comment, format_post, format_reply
 from tatd_bot.vk.models import Post
 from tatd_bot.vk.services import update_comments_cache
 from tatd_bot.config.settings import VK_MONITOR_UPDATE_DELAY
