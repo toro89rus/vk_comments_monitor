@@ -15,7 +15,7 @@ from tatd_bot.vk.models import Post
 from tatd_bot.vk.services import update_comments_cache
 from tatd_bot.config.settings import VK_MONITOR_UPDATE_DELAY
 
-logger = logger.getChild("telegram_bot")
+logger = logger.getChild(__name__)
 
 
 tatd_bot = Bot(token=TG_API_TOKEN)
@@ -76,7 +76,10 @@ async def send_to_subscribers(vk_comments) -> None:
         send_new_comments(vk_comments, subscriber_id)
         for subscriber_id in subscribers_ids
     )
-    await asyncio.gather(*tasks)
+    try:
+        await asyncio.gather(*tasks)
+    except Exception:
+        print(Exception)
 
 
 async def send_new_comments(vk_comments: list[Post], chat_id: int) -> None:
