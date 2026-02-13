@@ -32,6 +32,8 @@ keyboard = ReplyKeyboardMarkup(
 
 @dp.message(Command(commands="start"))
 async def process_start(message: Message):
+    user = message.from_user.full_name
+    logger.info(f"{user} sent start command")
     await message.answer(
         text="Подпишись для получения уведомлений", reply_markup=keyboard
     )
@@ -63,7 +65,7 @@ async def process_subscribe_button(message: Message):
         )
         text = f"Заявка от {message.from_user.full_name}"
         await tatd_bot.send_message(ADMIN_ID, text=text, reply_markup=keyboard)
-        logger.ingo("Subscribe application sent")
+        logger.info("Subscribe application sent")
         await message.answer(
             "Заявка отправлена. Я сообщу когда она будет обработана"
         )
@@ -109,7 +111,8 @@ async def monitor_vk_comments():
                 len(post.comments) for post in new_vk_comments
             )
             logger.info(
-                f"Collected {len(new_vk_comments)} posts with {total_comments} comments"
+                f"Collected {len(new_vk_comments)} posts",
+                f" with {total_comments} comments",
             )
             await send_to_subscribers(new_vk_comments)
             update_comments_cache(new_vk_comments)
