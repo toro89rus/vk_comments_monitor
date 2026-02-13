@@ -21,7 +21,7 @@ def format_post(post: Post) -> str:
 def format_comment(comment: Comment) -> str:
     return (
         f"{_format_datetime(comment.created_at)}\n"
-        f"Комментарий от {comment.author.name_gen}\n"
+        f"Комментарий от {comment.author.name_gen}\n\n"
         f"{comment.text}"
     )
 
@@ -29,6 +29,6 @@ def format_comment(comment: Comment) -> str:
 def format_reply(reply: Reply) -> str:
     return (
         f"{_format_datetime(reply.created_at)}\n"
-        f"Ответ для {reply.reply_to.name_gen} от {reply.author.name_gen} \n"
+        f"Ответ для {reply.reply_to.name_gen} от {reply.author.name_gen} \n\n"
         f"{reply.text}"
     )
