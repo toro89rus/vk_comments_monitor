@@ -23,3 +23,4 @@ VK_MONITOR_UPDATE_DELAY = int(os.getenv("VK_MONITOR_UPDATE_DELAY"))
 
 DATE_FORMAT = "%d.%m.%Y"
 DATETIME_FORMAT = "%d.%m.%Y %H:%M"
+ENV = os.getenv("ENV")

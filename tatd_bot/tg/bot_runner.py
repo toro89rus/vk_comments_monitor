@@ -6,14 +6,17 @@ from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
 
 import tatd_bot.tg.buttons as buttons
 import tatd_bot.tg.filters as filters
-from tatd_bot.config.settings import ADMIN_ID, TG_API_TOKEN
+from tatd_bot.config.settings import (
+    ADMIN_ID,
+    TG_API_TOKEN,
+    VK_MONITOR_UPDATE_DELAY,
+)
 from tatd_bot.logger import logger
 from tatd_bot.repository import repo
-from tatd_bot.vk.comments_parser import get_new_comments
 from tatd_bot.tg.formatters import format_comment, format_post, format_reply
+from tatd_bot.vk.comments_parser import get_new_comments
 from tatd_bot.vk.models import Post
 from tatd_bot.vk.services import update_comments_cache
-from tatd_bot.config.settings import VK_MONITOR_UPDATE_DELAY
 
 logger = logger.getChild(__name__)
 
@@ -43,7 +46,9 @@ async def accept_subscriber(message: Message):
 
 @dp.message(F.text == "Подписаться")
 async def process_subscribe_button(message: Message):
+    user = message.from_user.full_name
     chat_id = message.chat.id
+    logger.info(f"{user} pushed subscribe button")
     if repo.is_subscriber(chat_id):
         await message.answer(text="Подписка уже активна")
     else:
@@ -58,6 +63,7 @@ async def process_subscribe_button(message: Message):
         )
         text = f"Заявка от {message.from_user.full_name}"
         await tatd_bot.send_message(ADMIN_ID, text=text, reply_markup=keyboard)
+        logger.ingo("Subscribe application sent")
         await message.answer(
             "Заявка отправлена. Я сообщу когда она будет обработана"
         )
@@ -65,9 +71,12 @@ async def process_subscribe_button(message: Message):
 
 @dp.message(F.text == "Отписаться")
 async def process_unsubscribe_button(message: Message):
+    user = message.from_user.full_name
     chat_id = int(message.chat.id)
+    logger.info(f"{user} pushed subscribe button")
     repo.remove_subscriber(chat_id)
     await message.answer(text="Вы успешно отписались", reply_markup=keyboard)
+    await tatd_bot.send_message(ADMIN_ID, f"{user} отписался")
 
 
 async def send_to_subscribers(vk_comments) -> None:
@@ -76,10 +85,8 @@ async def send_to_subscribers(vk_comments) -> None:
         send_new_comments(vk_comments, subscriber_id)
         for subscriber_id in subscribers_ids
     )
-    try:
-        await asyncio.gather(*tasks)
-    except Exception:
-        print(Exception)
+    await asyncio.gather(*tasks)
+    logger.info(f"New comments sent to {len(subscribers_ids)}")
 
 
 async def send_new_comments(vk_comments: list[Post], chat_id: int) -> None:
@@ -98,8 +105,11 @@ async def monitor_vk_comments():
         logger.info("Started comments motinoring")
         new_vk_comments = get_new_comments()
         if new_vk_comments:
+            total_comments = sum(
+                len(post.comments) for post in new_vk_comments
+            )
             logger.info(
-                f"Collected {len(new_vk_comments)} posts with new comments"
+                f"Collected {len(new_vk_comments)} posts with {total_comments} comments"
             )
             await send_to_subscribers(new_vk_comments)
             update_comments_cache(new_vk_comments)
