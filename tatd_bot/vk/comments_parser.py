@@ -80,8 +80,6 @@ def get_new_replies(vk_comment) -> list[Reply]:
             serialized_reply = to_reply_from_vk(reply)
             if serialized_reply.text:
                 new_replies.append(serialized_reply)
-        else:
-            break
     return new_replies
 
 
