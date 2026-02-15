@@ -111,7 +111,10 @@ async def monitor_vk_comments():
                 len(post.comments) for post in new_vk_comments
             )
             logger.info(
-                f"Collected {len(new_vk_comments)} posts with {total_comments} comments",
+                (
+                    f"Collected {len(new_vk_comments)} posts",
+                    f"with {total_comments} comments",
+                ),
             )
             await send_to_subscribers(new_vk_comments)
             update_comments_cache(new_vk_comments)
