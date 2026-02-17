@@ -6,6 +6,7 @@ from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
 
 import tatd_bot.tg.buttons as buttons
 import tatd_bot.tg.filters as filters
+import tatd_bot.tg.lexicon as LEXICON
 from tatd_bot.config.settings import (
     ADMIN_ID,
     TG_API_TOKEN,
@@ -34,51 +35,54 @@ keyboard = ReplyKeyboardMarkup(
 async def process_start(message: Message):
     user = message.from_user.full_name
     logger.info(f"{user} sent start command")
-    await message.answer(
-        text="Подпишись для получения уведомлений", reply_markup=keyboard
-    )
+    await message.answer(text=LEXICON.Message.WELCOME, reply_markup=keyboard)
 
 
 @dp.message(filters.is_admin, filters.has_accept_text)
 async def accept_subscriber(message: Message):
     chat_id = int(message.text.split()[-1])
     repo.add_subscriber(chat_id)
-    await tatd_bot.send_message(chat_id, text="Ваша заявка одобрена")
+    await tatd_bot.send_message(
+        chat_id, text=LEXICON.Message.SUB_APPLICATION_ACCEPTED
+    )
 
 
-@dp.message(F.text == "Подписаться")
+@dp.message(F.text == LEXICON.Button.SUBSCRIBE)
 async def process_subscribe_button(message: Message):
     user = message.from_user.full_name
     chat_id = message.chat.id
     logger.info(f"{user} pushed subscribe button")
     if repo.is_subscriber(chat_id):
-        await message.answer(text="Подписка уже активна")
+        await message.answer(text=LEXICON.Message.ALREADY_SUBBED)
     else:
-        accept_subscriber = KeyboardButton(text=f"Принять заявку от {chat_id}")
+        accept_subscriber = KeyboardButton(
+            text=LEXICON.Button.ACCEPT_SUB.format(chat_id=chat_id)
+        )
         decline_subscriber = KeyboardButton(
-            text=f"Отклонить заявку от {chat_id}"
+            text=LEXICON.Button.DECLINE_SUB.format(chat_id=chat_id)
         )
         keyboard = ReplyKeyboardMarkup(
             keyboard=[[accept_subscriber, decline_subscriber]],
             resize_keyboard=True,
             one_time_keyboard=True,
         )
-        text = f"Заявка от {message.from_user.full_name}"
+        sender_name = message.from_user.full_name
+        text = LEXICON.Message.APPLICATION_FROM.format(name=sender_name)
         await tatd_bot.send_message(ADMIN_ID, text=text, reply_markup=keyboard)
         logger.info("Subscribe application sent")
-        await message.answer(
-            "Заявка отправлена. Я сообщу когда она будет обработана"
-        )
+        await message.answer(LEXICON.Message.SUB_APPLICATION_SENT)
 
 
-@dp.message(F.text == "Отписаться")
+@dp.message(F.text == LEXICON.Button.UNSUBSCRIBE)
 async def process_unsubscribe_button(message: Message):
     user = message.from_user.full_name
     chat_id = int(message.chat.id)
     logger.info(f"{user} pushed subscribe button")
     repo.remove_subscriber(chat_id)
-    await message.answer(text="Вы успешно отписались", reply_markup=keyboard)
-    await tatd_bot.send_message(ADMIN_ID, f"{user} отписался")
+    await message.answer(text=LEXICON.Message.UNSUBBED, reply_markup=keyboard)
+    await tatd_bot.send_message(
+        ADMIN_ID, LEXICON.Message.USER_UNSUBBED.format(user_name=user)
+    )
 
 
 async def send_to_subscribers(vk_comments) -> None:
