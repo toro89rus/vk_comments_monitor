@@ -1,7 +1,7 @@
 import asyncio
 
-from tatd_bot.tg.bot_runner import dp, monitor_vk_comments, tatd_bot
 from tatd_bot.logger import logger
+from tatd_bot.tg.bot_runner import dp, monitor_vk_comments, tatd_bot
 
 logger = logger.getChild(__name__)
 

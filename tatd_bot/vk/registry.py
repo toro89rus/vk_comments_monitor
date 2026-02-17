@@ -1,5 +1,6 @@
-from tatd_bot.vk.models import Group, User
 from dataclasses import dataclass, field
+
+from tatd_bot.vk.models import Group, User
 
 
 @dataclass

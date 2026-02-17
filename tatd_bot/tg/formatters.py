@@ -1,7 +1,7 @@
-from tatd_bot.vk.models import Post, Comment, Reply
-from tatd_bot.config.settings import VK_GROUP_LINK
 from datetime import datetime
-from tatd_bot.config.settings import DATETIME_FORMAT, DATE_FORMAT
+
+from tatd_bot.config.settings import DATE_FORMAT, DATETIME_FORMAT, VK_GROUP_LINK
+from tatd_bot.vk.models import Comment, Post, Reply
 
 
 def _format_date(timestamp: datetime):

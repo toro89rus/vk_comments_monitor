@@ -1,6 +1,7 @@
 import json
 
 from config.settings import LATEST_VK_COMMENTS_FILE_PATH
+
 from tatd_bot.logger import logger
 from tatd_bot.repository import r
 

@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
-
 from petrovich.enums import Gender
 
 from tatd_bot.repository import repo

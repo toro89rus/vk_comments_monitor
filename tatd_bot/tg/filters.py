@@ -1,5 +1,6 @@
-from aiogram.types import Message
 from aiogram.filters import BaseFilter
+from aiogram.types import Message
+
 from tatd_bot.config.settings import ADMIN_ID
 
 
