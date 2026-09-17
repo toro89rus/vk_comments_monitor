@@ -1,27 +1,39 @@
 import json
+import logging
 
-from config.settings import LATEST_VK_COMMENTS_FILE_PATH
+from tatd_bot.config import load_config
+from tatd_bot.repository import Repository
 
-from tatd_bot.logger import logger
-from tatd_bot.repository import r
-
-logger = logger.getChild("migration")
+LATEST_VK_COMMENTS_FILE_PATH = "storage/latest_vk_comments.json"
 
 
 def main():
+    config = load_config()
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("migration")
 
-    with open(LATEST_VK_COMMENTS_FILE_PATH, "r") as file:
-        latest_vk_comments = json.load(file)
+    repo = Repository(config.redis.host)
+    r = repo.r
 
-    logger.info(f"Loaded {len(latest_vk_comments)} records from JSON")
+    try:
+        with open(LATEST_VK_COMMENTS_FILE_PATH, "r") as file:
+            latest_vk_comments = json.load(file)
+    except FileNotFoundError:
+        logger.warning(
+            "File %s not found, nothing to migrate",
+            LATEST_VK_COMMENTS_FILE_PATH,
+        )
+        return
+
+    logger.info("Loaded %s records from JSON", len(latest_vk_comments))
 
     for post_id in latest_vk_comments:
         try:
             comment_id = latest_vk_comments[post_id]["comment_id"]
             r.set(f"post:{post_id}:last_comment", comment_id, ex=604800)
-            logger.info(f"Migrated post {post_id} → comment {comment_id}")
+            logger.info("Migrated post %s → comment %s", post_id, comment_id)
         except Exception as e:
-            logger.error(f"Failed to migrate {post_id}: {e}")
+            logger.error("Failed to migrate %s: %s", post_id, e)
 
     r.close()
     logger.info("Migration completed successfully")

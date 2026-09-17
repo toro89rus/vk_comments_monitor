@@ -1,23 +1,63 @@
 import asyncio
 
-from tatd_bot.logger import logger
-from tatd_bot.tg.bot_runner import dp, monitor_vk_comments, tatd_bot
+from aiogram import Bot, Dispatcher
 
-logger = logger.getChild(__name__)
-
-
-async def monitor_vk_comments_safe():
-    while True:
-        try:
-            await monitor_vk_comments()
-        except Exception:
-            logger.exception("VK monitor crashed")
-            await asyncio.sleep(60 * 5)
+from tatd_bot.config import load_config
+from tatd_bot.logger import setup_logger
+from tatd_bot.repository import Repository
+from tatd_bot.tg.formatters import TgMessageFormatter
+from tatd_bot.tg.handlers.admin import admin_router
+from tatd_bot.tg.handlers.user import user_router
+from tatd_bot.tg.services.services import (
+    BotUserService,
+    TgSubscriptionService,
+    VkCommentsMonitorService,
+)
+from tatd_bot.vk.api import VkApiService
+from tatd_bot.vk.registry import AuthorsRegistry
+from tatd_bot.vk.services import (
+    VkAuthorService,
+    VkFeedService,
+    VkMessageService,
+)
 
 
 async def run_bot():
+    config = load_config()
+    logger = setup_logger(config.log_format, config.env)
     logger.info("Bot started")
-    asyncio.create_task(monitor_vk_comments_safe())
+
+    repo = Repository(config.redis.host)
+    tatd_bot = Bot(token=config.tg.token)
+    dp = Dispatcher()
+
+    formatter = TgMessageFormatter(config)
+    vk_api_service = VkApiService(config)
+    vk_authors_registry = AuthorsRegistry()
+    vk_author_service = VkAuthorService(vk_authors_registry, repo)
+    vk_message_service = VkMessageService(vk_author_service, repo)
+    vk_feed_service = VkFeedService(
+        vk_api_service, vk_author_service, vk_message_service, repo
+    )
+    vk_monitor_service = VkCommentsMonitorService(
+        config=config,
+        repo=repo,
+        bot=tatd_bot,
+        formatter=formatter,
+        feed_service=vk_feed_service,
+    )
+    subsciption_service = TgSubscriptionService(config, repo)
+    bot_user_service = BotUserService(repo)
+
+    dp["config"] = config
+    dp["repo"] = repo
+    dp["subsciption_service"] = subsciption_service
+    dp["bot_user_service"] = bot_user_service
+
+    dp.include_router(user_router)
+    dp.include_router(admin_router)
+
+    asyncio.create_task(vk_monitor_service.monitor())
     await dp.start_polling(tatd_bot)
 
 

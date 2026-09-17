@@ -11,7 +11,7 @@ p = Petrovich()
 @dataclass
 class Group:
     id: int
-    name: Optional[str] = None
+    name: str | None = None
 
     kind: ClassVar[str] = "group"
     cache: ClassVar[dict] = {}
@@ -39,9 +39,9 @@ class Group:
 @dataclass
 class User:
     id: int
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    gender: Optional[Gender] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    gender: Gender | None = None
     # has_full_name: bool = False ?
 
     kind: ClassVar[str] = "user"

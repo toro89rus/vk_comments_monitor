@@ -1,25 +1,18 @@
 import logging
 
-from tatd_bot.config.settings import ENV
 
-
-def setup_logger(env: str) -> logging.Logger:
+def setup_logger(log_format: str, env: str) -> logging.Logger:
 
     logger = logging.getLogger()
 
-    std_oud_hadnler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "[{asctime}] #{levelname:8} - {name} - {message}", style="{"
-    )
+    std_out_handler = logging.StreamHandler()
+    formatter = logging.Formatter(log_format, style="{")
 
-    if ENV == "dev":
+    if env == "DEV":
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
 
-    std_oud_hadnler.setFormatter(formatter)
-    logger.addHandler(std_oud_hadnler)
+    std_out_handler.setFormatter(formatter)
+    logger.addHandler(std_out_handler)
     return logger
-
-
-logger = setup_logger(ENV)

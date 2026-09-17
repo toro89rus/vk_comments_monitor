@@ -19,6 +19,3 @@ class AuthorsRegistry:
 
     def register_group(self, group: Group) -> None:
         self.groups[group.id] = group
-
-
-authors_registry = AuthorsRegistry()

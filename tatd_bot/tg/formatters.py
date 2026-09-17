@@ -1,34 +1,38 @@
 from datetime import datetime
 
-from tatd_bot.config.settings import DATE_FORMAT, DATETIME_FORMAT, VK_GROUP_LINK
+from tatd_bot.config import AppConfig
 from tatd_bot.vk.models import Comment, Post, Reply
 
 
-def _format_date(timestamp: datetime):
-    return timestamp.date().strftime(DATE_FORMAT)
+class TgMessageFormatter:
 
+    def __init__(self, config: AppConfig):
+        self.config = config
 
-def _format_datetime(timestamp: datetime):
-    return timestamp.strftime(DATETIME_FORMAT)
+    def _format_date(self, timestamp: datetime):
+        return timestamp.date().strftime(self.config.date_format)
 
+    def _format_datetime(self, timestamp: datetime):
+        return timestamp.strftime(self.config.datetime_format)
 
-def format_post(post: Post) -> str:
-    shortened_text = f"{post.text[:100]}..."
-    link_tag = f"<a href='{VK_GROUP_LINK}_{post.id}'>Пост</a>"
-    return f"{link_tag} от {_format_date(post.created_at)}\n{shortened_text}"
+    def format_post(self, post: Post) -> str:
+        shortened_text = f"{post.text[:100]}..."
+        link_tag = f"<a href='{self.config.vk.group_link}_{post.id}'>Пост</a>"
+        formatted_date = self._format_date(post.created_at)
+        return f"{link_tag} от {formatted_date}\n{shortened_text}"
 
+    def format_comment(self, comment: Comment) -> str:
+        return (
+            f"{self._format_datetime(comment.created_at)}\n"
+            f"Комментарий от {comment.author.name_gen}\n\n"
+            f"{comment.text}"
+        )
 
-def format_comment(comment: Comment) -> str:
-    return (
-        f"{_format_datetime(comment.created_at)}\n"
-        f"Комментарий от {comment.author.name_gen}\n\n"
-        f"{comment.text}"
-    )
-
-
-def format_reply(reply: Reply) -> str:
-    return (
-        f"{_format_datetime(reply.created_at)}\n"
-        f"Ответ для {reply.reply_to.name_gen} от {reply.author.name_gen} \n\n"
-        f"{reply.text}"
-    )
+    def format_reply(self, reply: Reply) -> str:
+        author_name = reply.author.name_gen
+        reply_to_name = reply.reply_to.name_gen
+        return (
+            f"{self._format_datetime(reply.created_at)}\n"
+            f"Ответ для {reply_to_name} от {author_name} \n\n"
+            f"{reply.text}"
+        )
