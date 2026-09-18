@@ -1,4 +1,5 @@
 from datetime import datetime
+import html
 
 from tatd_bot.config import AppConfig
 from tatd_bot.vk.models import Comment, Post, Reply
@@ -16,7 +17,7 @@ class TgMessageFormatter:
         return timestamp.strftime(self.config.datetime_format)
 
     def format_post(self, post: Post) -> str:
-        shortened_text = f"{post.text[:100]}..."
+        shortened_text = f"{html.escape(post.text[:100])}..."
         link_tag = f"<a href='{self.config.vk.group_link}_{post.id}'>Пост</a>"
         formatted_date = self._format_date(post.created_at)
         return f"{link_tag} от {formatted_date}\n{shortened_text}"
@@ -25,7 +26,7 @@ class TgMessageFormatter:
         return (
             f"{self._format_datetime(comment.created_at)}\n"
             f"Комментарий от {comment.author.name_gen}\n\n"
-            f"{comment.text}"
+            f"{html.escape(comment.text)}"
         )
 
     def format_reply(self, reply: Reply) -> str:
@@ -34,5 +35,5 @@ class TgMessageFormatter:
         return (
             f"{self._format_datetime(reply.created_at)}\n"
             f"Ответ для {reply_to_name} от {author_name} \n\n"
-            f"{reply.text}"
+            f"{html.escape(reply.text)}"
         )
