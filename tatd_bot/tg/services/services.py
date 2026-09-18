@@ -3,6 +3,7 @@ import logging
 from enum import Enum
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramForbiddenError
 
 from tatd_bot.config import AppConfig
 from tatd_bot.repository import Repository
@@ -66,20 +67,31 @@ class VkCommentsMonitorService:
     async def _send_to_subscriber(
         self, subscriber_id: int, comments: list[Post]
     ):
-        for post in comments:
-            await self.bot.send_message(
-                subscriber_id,
-                self.formatter.format_post(post),
-                parse_mode="html",
-            )
-            for comment in post.comments:
+        try:
+            for post in comments:
                 await self.bot.send_message(
-                    subscriber_id, self.formatter.format_comment(comment)
+                    subscriber_id,
+                    self.formatter.format_post(post),
+                    parse_mode="html",
                 )
-                for reply in comment.replies:
+
+                for comment in post.comments:
                     await self.bot.send_message(
-                        subscriber_id, self.formatter.format_reply(reply)
+                        subscriber_id, self.formatter.format_comment(comment)
                     )
+                    for reply in comment.replies:
+                        await self.bot.send_message(
+                            subscriber_id, self.formatter.format_reply(reply)
+                        )
+        except TelegramForbiddenError:
+            logger.warning(
+                "User %s blocked the bot. Removing from subscribers.",
+                subscriber_id,
+            )
+            self.repo.remove_subscriber(subscriber_id)
+            self.repo.set_bot_user_status(
+                subscriber_id, BotUserStatus.UNSUBSCRIBED.value
+            )
 
 
 class CreateSubRequestResult(Enum):
