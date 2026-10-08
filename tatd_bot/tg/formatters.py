@@ -1,5 +1,5 @@
-from datetime import datetime
 import html
+from datetime import datetime
 
 from tatd_bot.config import AppConfig
 from tatd_bot.vk.models import Comment, Post, Reply

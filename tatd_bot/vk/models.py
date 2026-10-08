@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import ClassVar, Optional
 
-from petrovich.enums import Case, Gender
+from petrovich.enums import Case
 from petrovich.main import Petrovich
 
 p = Petrovich()
@@ -41,7 +41,7 @@ class User:
     id: int
     first_name: str | None = None
     last_name: str | None = None
-    gender: Gender | None = None
+    gender: str | None = None
     # has_full_name: bool = False ?
 
     kind: ClassVar[str] = "user"
@@ -50,9 +50,12 @@ class User:
     def _in_case(self, case: Case):
         if not all((self.first_name, self.last_name, self.gender)):
             return self.name
-        first = p.firstname(self.first_name, case, self.gender)
-        last = p.lastname(self.last_name, case, self.gender)
-        return f"{first} {last}"
+        try:
+            first = p.firstname(self.first_name, case, self.gender)
+            last = p.lastname(self.last_name, case, self.gender)
+            return f"{first} {last}"
+        except Exception:
+            return self.name
 
     @property
     def name(self):

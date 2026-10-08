@@ -52,12 +52,11 @@ class VkAuthorService:
             first_name = cached_external_user.get("first_name")
             last_name = cached_external_user.get("last_name")
             gender_raw = cached_external_user.get("gender")
-            gender = None
-            if gender_raw:
-                try:
-                    gender = Gender(gender_raw)
-                except (ValueError, KeyError):
-                    gender = None
+            gender = (
+                gender_raw
+                if gender_raw in (Gender.MALE, Gender.FEMALE, Gender.ANDRGN)
+                else None
+            )
             user = User(uid, first_name, last_name, gender)
             self.registry.register_user(user)
             return user
@@ -72,16 +71,11 @@ class VkAuthorService:
             if user:
                 base_data = vk_to_vk_user_base_data(vk_user)
                 user.update(base_data)
-                gender_str = (
-                    user.gender.value
-                    if hasattr(user.gender, "value")
-                    else (str(user.gender) if user.gender else "")
-                )
                 self.repo.save_user(
                     user.id,
                     user.first_name or "",
                     user.last_name or "",
-                    gender_str,
+                    user.gender or "",
                 )
 
     def update_groups_from_vk(self, vk_groups: list[dict]) -> None:
