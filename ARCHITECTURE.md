@@ -168,7 +168,9 @@ TTL комментариев (8 дней) больше окна монитори
 - CI: `.github/workflows/check.yml` — `make check` на каждый PR в `main` и на каждый пуш в `main`
   (job `check`). `main` защищён на GitHub (ruleset): мерж только через PR с зелёным `check`, без
   force push и удаления. Сам `deploy.sh` результат CI не проверяет.
-- `make install` (= `uv sync`) ставит и dev-зависимости, в том числе в Docker-образ.
+- `make install` (= `uv sync`) — локальная установка вместе с dev-зависимостями. В Docker-образ ставятся
+  только основные (`uv sync --locked --no-dev`), и `make run` запускает бота с `--no-dev`, чтобы `uv run`
+  не доустанавливал dev-группу при старте контейнера.
 
 ## Проблемы и планы
 

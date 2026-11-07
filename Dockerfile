@@ -12,6 +12,6 @@ WORKDIR /tatd_bot
 
 RUN apt-get update && apt-get install make
 
-RUN make install
+RUN uv sync --locked --no-dev
 
 CMD ["make", "run"]
