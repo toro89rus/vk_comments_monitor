@@ -71,9 +71,8 @@ def test_format_reply_keeps_text_as_is(formatter):
     ("author", "expected_name"),
     [
         (Group(5, "Театр"), "Театр"),
-        # текущее поведение: у неизвестного автора в тексте None
-        (User(9), "None"),
-        (Group(5), "None"),
+        (User(9), "неизвестного пользователя"),
+        (Group(5), "неизвестной группы"),
     ],
 )
 def test_format_comment_author_name(formatter, author, expected_name):
@@ -97,4 +96,12 @@ def test_format_reply(formatter):
         "05.03.2026 09:07\n"
         "Ответ для Ивана Петрова от Марии Ивановой \n\n"
         "Согласна"
+    )
+
+
+def test_format_reply_to_unknown_user(formatter):
+    reply = Reply(2, CREATED_AT, MARIA, "Согласна", User(0))
+
+    assert "Ответ для неизвестного пользователя от Марии Ивановой" in (
+        formatter.format_reply(reply)
     )

@@ -14,15 +14,6 @@
 
 ## Баги
 
-### B2. «Комментарий от None» · средний
-
-Если имя автора не пришло из VK, `name_gen` / `name_dat` у `User` и `Group` возвращают `None`, и в сообщение
-попадает строка `None`. `str()` при этом даёт «Неизвестный пользователь» / «Неизвестная группа».
-
-- Где: `tatd_bot/vk/models.py`, используется в `tatd_bot/tg/formatters.py`.
-- Тесты: `tests/vk/test_models.py::TestUser::test_unknown_user`, `TestGroup::test_unknown_group`,
-  `tests/tg/test_formatters.py::test_format_comment_author_name`.
-
 ### B4. Отфильтрованный комментарий с новыми ответами уходит пустым · низкий
 
 Если текст комментария отфильтрован (например «Спасибо!»), но под ним есть новые ответы, подписчику

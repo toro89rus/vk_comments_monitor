@@ -7,6 +7,12 @@ from petrovich.main import Petrovich
 
 p = Petrovich()
 
+# Как назвать автора без имени в тексте сообщения
+UNKNOWN_GROUP_GEN = "неизвестной группы"
+UNKNOWN_GROUP_DAT = "неизвестной группе"
+UNKNOWN_USER_GEN = "неизвестного пользователя"
+UNKNOWN_USER_DAT = "неизвестному пользователю"
+
 
 @dataclass
 class Group:
@@ -22,13 +28,13 @@ class Group:
 
     # Родительный
     @property
-    def name_gen(self):
-        return self.name
+    def name_gen(self) -> str:
+        return self.name or UNKNOWN_GROUP_GEN
 
     # Дательный
     @property
-    def name_dat(self):
-        return self.name
+    def name_dat(self) -> str:
+        return self.name or UNKNOWN_GROUP_DAT
 
     def update(self, data: dict) -> None:
         if data.get("name"):
@@ -73,13 +79,13 @@ class User:
 
     # Родительный
     @property
-    def name_gen(self):
-        return self._in_case(Case.GENITIVE)
+    def name_gen(self) -> str:
+        return self._in_case(Case.GENITIVE) or UNKNOWN_USER_GEN
 
     # Дательный
     @property
-    def name_dat(self):
-        return self._in_case(Case.DATIVE)
+    def name_dat(self) -> str:
+        return self._in_case(Case.DATIVE) or UNKNOWN_USER_DAT
 
 
 @dataclass
