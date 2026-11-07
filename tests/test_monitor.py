@@ -30,7 +30,7 @@ class FakeFeedService:
             raise self.error
         return self.posts
 
-    def save_comments_cache(self, posts: list[Post]) -> None:
+    async def save_comments_cache(self, posts: list[Post]) -> None:
         self.saved.append(posts)
 
 
@@ -82,7 +82,7 @@ class TestMonitor:
     async def test_sends_post_comments_and_replies_in_order(
         self, monitor_service, tg_repo, bot
     ):
-        tg_repo.add_subscriber(1)
+        await tg_repo.add_subscriber(1)
 
         await run_one_pass(monitor_service)
 
@@ -96,7 +96,7 @@ class TestMonitor:
     async def test_only_post_is_sent_as_html(
         self, monitor_service, tg_repo, bot
     ):
-        tg_repo.add_subscriber(1)
+        await tg_repo.add_subscriber(1)
 
         await run_one_pass(monitor_service)
 
@@ -106,8 +106,8 @@ class TestMonitor:
     async def test_sends_to_every_subscriber_and_saves_cache(
         self, monitor_service, tg_repo, bot, feed_service
     ):
-        tg_repo.add_subscriber(1)
-        tg_repo.add_subscriber(2)
+        await tg_repo.add_subscriber(1)
+        await tg_repo.add_subscriber(2)
 
         await run_one_pass(monitor_service)
 
@@ -130,7 +130,7 @@ class TestMonitor:
     async def test_nothing_new(
         self, monitor_service, tg_repo, bot, feed_service
     ):
-        tg_repo.add_subscriber(1)
+        await tg_repo.add_subscriber(1)
         feed_service.posts = []
 
         await run_one_pass(monitor_service)
@@ -150,24 +150,26 @@ class TestMonitor:
         self, monitor_service, tg_repo, bot, feed_service
     ):
         for user_id in (1, 2):
-            tg_repo.add_subscriber(user_id)
-            tg_repo.save_bot_user_info(
+            await tg_repo.add_subscriber(user_id)
+            await tg_repo.save_bot_user_info(
                 bot_user(user_id, BotUserStatus.SUBSCRIBED)
             )
         bot.blocked_by = {1}
 
         await run_one_pass(monitor_service)
 
-        assert tg_repo.get_subscribers() == [2]
-        assert tg_repo.get_bot_user(1).status is BotUserStatus.UNSUBSCRIBED
+        assert await tg_repo.get_subscribers() == [2]
+        assert (
+            await tg_repo.get_bot_user(1)
+        ).status is BotUserStatus.UNSUBSCRIBED
         assert len(bot.texts_for(2)) == 4
         assert feed_service.saved == [feed_service.posts]
 
     async def test_other_telegram_error_aborts_pass_without_saving(
         self, monitor_service, tg_repo, bot, feed_service
     ):
-        tg_repo.add_subscriber(1)
-        tg_repo.add_subscriber(2)
+        await tg_repo.add_subscriber(1)
+        await tg_repo.add_subscriber(2)
         bot.errors = {
             1: TelegramRetryAfter(
                 method=SendMessage(chat_id=1, text=""),

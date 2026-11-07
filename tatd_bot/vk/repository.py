@@ -1,4 +1,4 @@
-import redis
+from redis import asyncio as redis
 
 COMMENT_TEMPLATE = "comment:{comment_id}"
 USER_TEMPLATE = "user:{user_id}"
@@ -15,15 +15,15 @@ class VkRepository:
     def _make_redis_key(self, template_name: str, **kwargs: dict) -> str:
         return template_name.format(**kwargs)
 
-    def get_user(self, user_id: int) -> dict[str, str]:
+    async def get_user(self, user_id: int) -> dict[str, str]:
         key = self._make_redis_key(USER_TEMPLATE, user_id=user_id)
-        return self.r.hgetall(key)
+        return await self.r.hgetall(key)
 
-    def save_user(
+    async def save_user(
         self, user_id: int, first_name: str, last_name: str, gender: str
     ) -> None:
         key = self._make_redis_key(USER_TEMPLATE, user_id=user_id)
-        self.r.hset(
+        await self.r.hset(
             key,
             mapping={
                 "first_name": first_name,
@@ -32,35 +32,35 @@ class VkRepository:
             },
         )
 
-        self.r.expire(key, USER_TTL)
+        await self.r.expire(key, USER_TTL)
 
-    def get_group_name(self, group_id: int) -> str | None:
+    async def get_group_name(self, group_id: int) -> str | None:
         key = self._make_redis_key(GROUP_NAME_KEY_TEMPLATE, group_id=group_id)
-        return self.r.hget(key, "name")
+        return await self.r.hget(key, "name")
 
-    def save_group_name(self, group_id: int, group_name: str) -> None:
+    async def save_group_name(self, group_id: int, group_name: str) -> None:
         key = self._make_redis_key(GROUP_NAME_KEY_TEMPLATE, group_id=group_id)
-        self.r.hset(key, "name", group_name)
-        self.r.expire(key, USER_TTL)
+        await self.r.hset(key, "name", group_name)
+        await self.r.expire(key, USER_TTL)
 
-    def is_comment_processed(self, comment_id: int) -> bool:
+    async def is_comment_processed(self, comment_id: int) -> bool:
         key = self._make_redis_key(COMMENT_TEMPLATE, comment_id=comment_id)
-        value = self.r.hget(key, "is_processed")
+        value = await self.r.hget(key, "is_processed")
         return value == "1"
 
-    def process_comment(self, comment_id: int) -> None:
+    async def process_comment(self, comment_id: int) -> None:
         key = self._make_redis_key(COMMENT_TEMPLATE, comment_id=comment_id)
-        self.r.hset(key, "is_processed", 1)
-        self.r.expire(key, COMMENT_TTL)
+        await self.r.hset(key, "is_processed", 1)
+        await self.r.expire(key, COMMENT_TTL)
 
-    def save_last_reply_id(self, comment_id: int, reply_id: int) -> None:
+    async def save_last_reply_id(self, comment_id: int, reply_id: int) -> None:
         key = self._make_redis_key(COMMENT_TEMPLATE, comment_id=comment_id)
-        self.r.hset(key, "last_reply_id", reply_id)
-        self.r.expire(key, COMMENT_TTL)
+        await self.r.hset(key, "last_reply_id", reply_id)
+        await self.r.expire(key, COMMENT_TTL)
 
-    def get_last_reply_id(self, comment_id: int) -> int | None:
+    async def get_last_reply_id(self, comment_id: int) -> int | None:
         key = self._make_redis_key(COMMENT_TEMPLATE, comment_id=comment_id)
-        value = self.r.hget(key, "last_reply_id")
+        value = await self.r.hget(key, "last_reply_id")
         if value:
             return int(value)
         return None

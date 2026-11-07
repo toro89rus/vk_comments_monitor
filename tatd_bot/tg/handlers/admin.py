@@ -24,7 +24,7 @@ async def review_applications(
     subscription_service: TgSubscriptionService,
     state: FSMContext,
 ):
-    applications = subscription_service.get_pending_subscribers()
+    applications = await subscription_service.get_pending_subscribers()
     if not applications:
         await message.answer(LEXICON.Message.NO_PENDING_APPLICATIONS)
     else:
@@ -42,7 +42,7 @@ async def send_application(
     subscription_service: TgSubscriptionService,
     state: FSMContext,
 ):
-    application_user = subscription_service.get_pending_application_user()
+    application_user = await subscription_service.get_pending_application_user()
     if not application_user:
         await message.answer(
             LEXICON.Message.NO_PENDING_APPLICATIONS,
@@ -74,7 +74,7 @@ async def accept_subscriber(
         "application_user_id"
     )
     if application_user_id:
-        subscription_service.accept_subscriber(application_user_id)
+        await subscription_service.accept_subscriber(application_user_id)
         await bot.send_message(
             application_user_id, LEXICON.Message.SUB_APPLICATION_ACCEPTED
         )
@@ -97,7 +97,7 @@ async def decline_subscriber(
         "application_user_id"
     )
     if application_user_id:
-        subscription_service.decline_subscriber(application_user_id)
+        await subscription_service.decline_subscriber(application_user_id)
         await bot.send_message(
             application_user_id, LEXICON.Message.SUB_APPLICATION_DECLINED
         )

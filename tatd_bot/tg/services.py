@@ -24,50 +24,54 @@ class TgSubscriptionService:
     async def request_subscription(
         self, user: BotUser
     ) -> CreateSubRequestResult:
-        if self.repo.is_subscriber(user.id):
+        if await self.repo.is_subscriber(user.id):
             return CreateSubRequestResult.ALREADY_SUBBED
-        if self.repo.is_pending_subscriber(user.id):
+        if await self.repo.is_pending_subscriber(user.id):
             return CreateSubRequestResult.ALREADY_PENDING
         user.status = BotUserStatus.PENDING
-        self.repo.save_bot_user_info(user)
-        self.repo.add_pending_subscriber(user.id)
+        await self.repo.save_bot_user_info(user)
+        await self.repo.add_pending_subscriber(user.id)
         return CreateSubRequestResult.REQUEST_CREATED
 
     async def unsubscribe(self, user: BotUser) -> UnsubscribeResult:
-        if self.repo.is_subscriber(user.id):
-            self.repo.remove_subscriber(user.id)
+        if await self.repo.is_subscriber(user.id):
+            await self.repo.remove_subscriber(user.id)
             user.status = BotUserStatus.UNSUBSCRIBED
-            self.repo.save_bot_user_info(user)
+            await self.repo.save_bot_user_info(user)
             return UnsubscribeResult.UNSUBSCRIBED
 
         else:
             return UnsubscribeResult.NOT_SUBSCRIBED
 
-    def get_pending_subscribers(self):
-        return self.repo.get_pending_subscribers()
+    async def get_pending_subscribers(self):
+        return await self.repo.get_pending_subscribers()
 
-    def get_pending_application_user(self) -> BotUser | None:
-        user_id = self.repo.get_pending_subscriber()
+    async def get_pending_application_user(self) -> BotUser | None:
+        user_id = await self.repo.get_pending_subscriber()
         if user_id:
-            return self.repo.get_bot_user(user_id)
+            return await self.repo.get_bot_user(user_id)
         return None
 
-    def accept_subscriber(self, user_id: int) -> None:
-        self.repo.add_subscriber(user_id)
-        self.repo.set_bot_user_status(user_id, BotUserStatus.SUBSCRIBED.value)
-        self.repo.remove_pending_subscriber(user_id)
+    async def accept_subscriber(self, user_id: int) -> None:
+        await self.repo.add_subscriber(user_id)
+        await self.repo.set_bot_user_status(
+            user_id, BotUserStatus.SUBSCRIBED.value
+        )
+        await self.repo.remove_pending_subscriber(user_id)
 
-    def decline_subscriber(self, user_id: int) -> None:
-        self.repo.set_bot_user_status(user_id, BotUserStatus.REJECTED.value)
-        self.repo.remove_pending_subscriber(user_id)
+    async def decline_subscriber(self, user_id: int) -> None:
+        await self.repo.set_bot_user_status(
+            user_id, BotUserStatus.REJECTED.value
+        )
+        await self.repo.remove_pending_subscriber(user_id)
 
 
 class BotUserService:
     def __init__(self, repo: TgRepository):
         self.repo = repo
 
-    def get_user(self, user_id: int) -> BotUser | None:
-        return self.repo.get_bot_user(user_id)
+    async def get_user(self, user_id: int) -> BotUser | None:
+        return await self.repo.get_bot_user(user_id)
 
-    def save_user_info(self, user: BotUser) -> None:
-        self.repo.save_bot_user_info(user)
+    async def save_user_info(self, user: BotUser) -> None:
+        await self.repo.save_bot_user_info(user)

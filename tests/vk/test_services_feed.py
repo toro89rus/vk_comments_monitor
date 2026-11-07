@@ -86,7 +86,7 @@ class TestNewComments:
     async def test_processed_comment_is_skipped(
         self, feed_service, api, vk_repo
     ):
-        vk_repo.process_comment(10)
+        await vk_repo.process_comment(10)
         api.posts = [vk_post(1)]
         api.comments = {1: [vk_comment(10), vk_comment(11)]}
 
@@ -95,7 +95,7 @@ class TestNewComments:
     async def test_post_without_new_comments_is_omitted(
         self, feed_service, api, vk_repo
     ):
-        vk_repo.process_comment(10)
+        await vk_repo.process_comment(10)
         api.posts = [vk_post(1), vk_post(2)]
         api.comments = {1: [vk_comment(10)], 2: [vk_comment(20)]}
 
@@ -132,8 +132,8 @@ class TestNewReplies:
     async def test_only_replies_after_last_sent_are_new(
         self, feed_service, api, vk_repo
     ):
-        vk_repo.process_comment(10)
-        vk_repo.save_last_reply_id(10, 12)
+        await vk_repo.process_comment(10)
+        await vk_repo.save_last_reply_id(10, 12)
         api.posts = [vk_post(1)]
         api.comments = {
             1: [
@@ -152,8 +152,8 @@ class TestNewReplies:
     async def test_processed_comment_without_new_replies_is_skipped(
         self, feed_service, api, vk_repo
     ):
-        vk_repo.process_comment(10)
-        vk_repo.save_last_reply_id(10, 12)
+        await vk_repo.process_comment(10)
+        await vk_repo.save_last_reply_id(10, 12)
         api.posts = [vk_post(1)]
         api.comments = {
             1: [vk_comment(10, replies=[vk_reply(11), vk_reply(12)])]
@@ -253,8 +253,8 @@ class TestAuthorsNames:
     async def test_authors_known_from_redis_are_not_fetched(
         self, feed_service, api, vk_repo
     ):
-        vk_repo.save_user(1, "Иван", "Петров", Gender.MALE)
-        vk_repo.save_group_name(5, "Театр")
+        await vk_repo.save_user(1, "Иван", "Петров", Gender.MALE)
+        await vk_repo.save_group_name(5, "Театр")
         api.posts = [vk_post(1)]
         api.comments = {
             1: [vk_comment(10, from_id=1), vk_comment(11, from_id=-5)]
@@ -274,7 +274,7 @@ class TestAuthorsNames:
 
         await feed_service.get_new_comments()
 
-        assert vk_repo.get_user(1)["first_name"] == "Иван"
+        assert (await vk_repo.get_user(1))["first_name"] == "Иван"
 
     async def test_author_missing_in_vk_response_stays_unknown(
         self, feed_service, api
@@ -302,7 +302,7 @@ class TestAuthorsNames:
     async def test_no_names_requested_when_nothing_new(
         self, feed_service, api, vk_repo
     ):
-        vk_repo.process_comment(10)
+        await vk_repo.process_comment(10)
         api.posts = [vk_post(1)]
         api.comments = {1: [vk_comment(10)]}
 
@@ -318,10 +318,12 @@ class TestSaveCommentsCache:
         api.posts = [vk_post(1)]
         api.comments = {1: [vk_comment(10)]}
 
-        feed_service.save_comments_cache(await feed_service.get_new_comments())
+        await feed_service.save_comments_cache(
+            await feed_service.get_new_comments()
+        )
 
-        assert vk_repo.is_comment_processed(10) is True
-        assert vk_repo.get_last_reply_id(10) is None
+        assert await vk_repo.is_comment_processed(10) is True
+        assert await vk_repo.get_last_reply_id(10) is None
         assert await feed_service.get_new_comments() == []
 
     async def test_last_reply_id_is_saved(self, feed_service, api, vk_repo):
@@ -330,9 +332,11 @@ class TestSaveCommentsCache:
             1: [vk_comment(10, replies=[vk_reply(11), vk_reply(12)])]
         }
 
-        feed_service.save_comments_cache(await feed_service.get_new_comments())
+        await feed_service.save_comments_cache(
+            await feed_service.get_new_comments()
+        )
 
-        assert vk_repo.get_last_reply_id(10) == 12
+        assert await vk_repo.get_last_reply_id(10) == 12
         assert await feed_service.get_new_comments() == []
 
     async def test_last_reply_id_is_the_last_returned_reply(
@@ -351,10 +355,12 @@ class TestSaveCommentsCache:
             ]
         }
 
-        feed_service.save_comments_cache(await feed_service.get_new_comments())
+        await feed_service.save_comments_cache(
+            await feed_service.get_new_comments()
+        )
 
         # отфильтрованный ответ 12 не сохраняется, но и не уйдёт повторно
-        assert vk_repo.get_last_reply_id(10) == 11
+        assert await vk_repo.get_last_reply_id(10) == 11
         assert await feed_service.get_new_comments() == []
 
     async def test_filtered_new_comment_is_never_marked_processed(
@@ -363,17 +369,21 @@ class TestSaveCommentsCache:
         api.posts = [vk_post(1)]
         api.comments = {1: [vk_comment(10, text="Спасибо!")]}
 
-        feed_service.save_comments_cache(await feed_service.get_new_comments())
+        await feed_service.save_comments_cache(
+            await feed_service.get_new_comments()
+        )
 
         # текущее поведение: проверяется заново на каждом проходе
-        assert vk_repo.is_comment_processed(10) is False
+        assert await vk_repo.is_comment_processed(10) is False
 
     async def test_new_reply_to_processed_comment(
         self, feed_service, api, vk_repo
     ):
         api.posts = [vk_post(1)]
         api.comments = {1: [vk_comment(10, replies=[vk_reply(11)])]}
-        feed_service.save_comments_cache(await feed_service.get_new_comments())
+        await feed_service.save_comments_cache(
+            await feed_service.get_new_comments()
+        )
 
         api.comments = {
             1: [vk_comment(10, replies=[vk_reply(11), vk_reply(12)])]
