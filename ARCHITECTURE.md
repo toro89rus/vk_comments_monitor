@@ -48,8 +48,6 @@ tatd_bot/
     keyboards/        reply-клавиатуры
     filters/          IsAdmin
     states/           AdminStates (FSM)
-scripts/vk_comments_monitor.py  остаток прежней схемы: разовый прогон мониторинга по крону
-                                (дублирует VkCommentsMonitorService, сейчас не используется)
 ```
 
 Вне git (в `.gitignore`) лежит `ya_maps_monitor` — мониторинг отзывов на Яндекс Картах. Эта часть заморожена,
@@ -159,9 +157,6 @@ TTL комментариев (8 дней) больше окна монитори
   фиксации версии.
 - Деплой: `deploy.sh` на сервере (`/home/toro/vk_comments_monitor`) по крону. Если `origin/main` ушёл
   вперёд — `git pull` и `docker compose up -d --build tatd_bot`. Пуш в `main` = деплой.
-- `make start-vk` / `cron-vk_monitor` запускают `scripts/vk_comments_monitor.py` — остаток схемы до
-  перехода на aiogram 3 (`f2d8b18`), когда мониторинг запускался по крону. Compose его не вызывает.
-  Цели `start-ya_maps` / `cron-ya_maps` ссылаются на модуль, которого нет в git.
 - Проверки: `make check` — `ruff format --check`, `ruff check`, `pytest` (по отдельности: `make format`,
   `make lint`, `make test`). Тесты — `tests/` (pytest, pytest-asyncio в режиме auto, fakeredis).
   Старые нарушения правил ruff помечены `# noqa`.

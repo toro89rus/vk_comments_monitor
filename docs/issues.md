@@ -105,11 +105,6 @@
 
 - Тест: `tests/vk/test_services_feed.py::TestNewReplies::test_replies_are_taken_only_from_thread_items`.
 
-### Q2. Остался ли на сервере старый crontab?
-
-Если `make cron-vk_monitor` всё ещё запускается по крону, рядом с ботом работает второй мониторинг, и
-комментарии могут приходить дважды. Проверить: `crontab -l` на сервере.
-
 ### Q3. Бывает ли ответ без `reply_to_user`?
 
 Сейчас у такого ответа адресатом становится `User(0)`, и id 0 уходит в `users.get`. Если в настоящих ответах
