@@ -141,7 +141,6 @@ class TestBotUserService:
         result = service.save_user_info(bot_user(1))
 
         assert service.get_user(1) == bot_user(1)
-        # текущее поведение: аннотация обещает BotUser, возвращается None
         assert result is None
 
 
