@@ -1,12 +1,12 @@
 import pytest
 from aiogram.types import User
 
-from tatd_bot.tg.mappers.mappers import (
+from tatd_bot.tg.mappers import (
     map_bot_user_to_redis,
     map_redis_to_bot_user,
     map_tg_to_bot_user,
 )
-from tatd_bot.tg.models.models import BotUser, BotUserStatus
+from tatd_bot.tg.models import BotUser, BotUserStatus
 
 
 def test_map_tg_to_bot_user_defaults_to_new_status():

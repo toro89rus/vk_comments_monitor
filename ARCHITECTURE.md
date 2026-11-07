@@ -26,7 +26,8 @@ tatd_bot/
   bot.py              точка входа: собирает зависимости, запускает мониторинг и polling
   config/config.py    AppConfig из переменных окружения; load_config() подгружает .env
   logger.py           настройка корневого логгера
-  repository.py       Repository — весь доступ к Redis (и для tg, и для vk)
+  monitor.py          VkCommentsMonitorService — цикл мониторинга vk → рассылка в tg
+  redis_client.py     create_redis_client — клиент Redis из конфига, общий для обоих хранилищ
   utils/time_utils.py unix-время → datetime в Europe/Moscow
   vk/
     api.py            VkApiService — HTTP-вызовы VK API
@@ -35,18 +36,19 @@ tatd_bot/
     mappers.py        JSON VK → модели
     text_formatting.py фильтрация текста комментариев («спасибо», поздравления, пустые)
     services.py       VkAuthorService, VkMessageService, VkFeedService
+    repository.py     VkRepository — Redis: обработанные комментарии, кэш авторов
   tg/
     handlers/user.py  /start, «Подписаться», «Отписаться»
     handlers/admin.py разбор заявок администратором
-    services/services.py VkCommentsMonitorService (цикл мониторинга и рассылка),
-                      TgSubscriptionService, BotUserService
+    services.py       TgSubscriptionService, BotUserService
+    repository.py     TgRepository — Redis: подписчики, заявки, bot_user
     formatters.py     TgMessageFormatter — модели VK → текст сообщений
-    models/models.py  BotUser, BotUserStatus
-    mappers/mappers.py aiogram User / Redis-хэш ↔ BotUser
+    models.py         BotUser, BotUserStatus
+    mappers.py        aiogram User / Redis-хэш ↔ BotUser
     lexicon.py        тексты кнопок и сообщений
-    keyboards/        reply-клавиатуры
-    filters/          IsAdmin
-    states/           AdminStates (FSM)
+    keyboards.py      reply-клавиатуры
+    filters.py        IsAdmin
+    states.py         AdminStates (FSM)
 ```
 
 Вне git (в `.gitignore`) лежит `ya_maps_monitor` — мониторинг отзывов на Яндекс Картах. Эта часть заморожена,
@@ -57,21 +59,21 @@ tatd_bot/
 Внедрения зависимостей через фреймворк нет. Всё собирается вручную в `bot.py: run_bot()`:
 
 ```
-Repository(create_redis_client(config.redis))
+redis_client = create_redis_client(config.redis)
+TgRepository(redis_client), VkRepository(redis_client)
 VkApiService(config)
 AuthorsRegistry()
-VkAuthorService(registry, repo)
-VkMessageService(author_service, repo)
-VkFeedService(api, author_service, message_service, repo)
-VkCommentsMonitorService(config, repo, bot, formatter, feed_service)
-TgSubscriptionService(config, repo)
-BotUserService(repo)
+VkAuthorService(registry, vk_repo)
+VkMessageService(author_service, vk_repo)
+VkFeedService(api, author_service, message_service, vk_repo)
+VkCommentsMonitorService(config, tg_repo, bot, formatter, feed_service)
+TgSubscriptionService(config, tg_repo)
+BotUserService(tg_repo)
 ```
 
-В хендлеры через `dp[...]` передаются `config`, `repo`, `subscription_service` и
-`bot_user_service`. Ключ в `dp` совпадает с именем аргумента хендлера, по нему aiogram и подставляет
-зависимость. Мониторинг запускается `asyncio.create_task`
-в том же event loop, что и polling.
+В хендлеры через `dp[...]` передаются `config`, `subscription_service` и `bot_user_service`.
+Ключ в `dp` совпадает с именем аргумента хендлера, по нему aiogram и подставляет зависимость. Мониторинг
+запускается `asyncio.create_task` в том же event loop, что и polling.
 
 ## Поток: мониторинг комментариев
 

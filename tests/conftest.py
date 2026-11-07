@@ -10,7 +10,8 @@ from tatd_bot.config.config import (
     TgConfig,
     VkConfig,
 )
-from tatd_bot.repository import Repository
+from tatd_bot.tg.repository import TgRepository
+from tatd_bot.vk.repository import VkRepository
 
 ADMIN_ID = 1000
 
@@ -34,5 +35,10 @@ def redis_client() -> fakeredis.FakeRedis:
 
 
 @pytest.fixture
-def repo(redis_client) -> Repository:
-    return Repository(redis_client)
+def tg_repo(redis_client) -> TgRepository:
+    return TgRepository(redis_client)
+
+
+@pytest.fixture
+def vk_repo(redis_client) -> VkRepository:
+    return VkRepository(redis_client)

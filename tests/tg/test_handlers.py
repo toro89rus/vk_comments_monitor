@@ -4,9 +4,9 @@ from aiogram.fsm.state import default_state
 from aiogram.fsm.storage.base import StorageKey
 from aiogram.fsm.storage.memory import MemoryStorage
 
-import tatd_bot.tg.keyboards.keyboards as KEYBOARDS
+import tatd_bot.tg.keyboards as KEYBOARDS
 from tatd_bot.tg import lexicon as LEXICON
-from tatd_bot.tg.filters.filters import IsAdmin
+from tatd_bot.tg.filters import IsAdmin
 from tatd_bot.tg.handlers.admin import (
     accept_subscriber,
     decline_subscriber,
@@ -17,8 +17,8 @@ from tatd_bot.tg.handlers.user import (
     process_subscribe_button,
     process_unsubscribe_button,
 )
-from tatd_bot.tg.models.models import BotUserStatus
-from tatd_bot.tg.services.services import (
+from tatd_bot.tg.models import BotUserStatus
+from tatd_bot.tg.services import (
     BotUserService,
     TgSubscriptionService,
 )
@@ -34,13 +34,13 @@ def bot():
 
 
 @pytest.fixture
-def subscription_service(app_config, repo):
-    return TgSubscriptionService(app_config, repo)
+def subscription_service(app_config, tg_repo):
+    return TgSubscriptionService(app_config, tg_repo)
 
 
 @pytest.fixture
-def bot_user_service(repo):
-    return BotUserService(repo)
+def bot_user_service(tg_repo):
+    return BotUserService(tg_repo)
 
 
 @pytest.fixture
@@ -72,27 +72,29 @@ class TestIsAdmin:
 
 
 class TestStart:
-    async def test_new_user_is_saved(self, bot_user_service, app_config, repo):
+    async def test_new_user_is_saved(
+        self, bot_user_service, app_config, tg_repo
+    ):
         message = message_from(USER_ID)
 
         await process_start(message, bot_user_service, app_config)
 
-        assert repo.get_bot_user(USER_ID).status is BotUserStatus.NEW
+        assert tg_repo.get_bot_user(USER_ID).status is BotUserStatus.NEW
         assert message.answers[0].text == LEXICON.Message.WELCOME
         assert message.answers[0].reply_markup is KEYBOARDS.USER_SUBSCRIBE
 
     async def test_known_user_is_not_overwritten(
-        self, bot_user_service, app_config, repo
+        self, bot_user_service, app_config, tg_repo
     ):
-        repo.add_subscriber(USER_ID)
+        tg_repo.add_subscriber(USER_ID)
         await process_start(message_from(USER_ID), bot_user_service, app_config)
-        repo.set_bot_user_status(USER_ID, BotUserStatus.SUBSCRIBED.value)
+        tg_repo.set_bot_user_status(USER_ID, BotUserStatus.SUBSCRIBED.value)
 
         await process_start(
             message_from(USER_ID, "Пётр"), bot_user_service, app_config
         )
 
-        user = repo.get_bot_user(USER_ID)
+        user = tg_repo.get_bot_user(USER_ID)
         assert user.status is BotUserStatus.SUBSCRIBED
         assert user.full_name == "Иван Петров"
 
@@ -106,13 +108,13 @@ class TestStart:
 
 class TestSubscribeButton:
     async def test_request_is_sent_to_admin(
-        self, bot, subscription_service, app_config, bot_user_service, repo
+        self, bot, subscription_service, app_config, bot_user_service, tg_repo
     ):
         await subscribe(
             USER_ID, bot, subscription_service, app_config, bot_user_service
         )
 
-        assert repo.is_pending_subscriber(USER_ID) is True
+        assert tg_repo.is_pending_subscriber(USER_ID) is True
         assert bot.texts_for(ADMIN_ID) == ["Заявка от Иван1 Петров"]
         assert bot.texts_for(USER_ID) == [LEXICON.Message.SUB_APPLICATION_SENT]
 
@@ -132,9 +134,9 @@ class TestSubscribeButton:
         assert len(bot.texts_for(ADMIN_ID)) == 1
 
     async def test_already_subscribed(
-        self, bot, subscription_service, app_config, bot_user_service, repo
+        self, bot, subscription_service, app_config, bot_user_service, tg_repo
     ):
-        repo.add_subscriber(USER_ID)
+        tg_repo.add_subscriber(USER_ID)
 
         await subscribe(
             USER_ID, bot, subscription_service, app_config, bot_user_service
@@ -146,16 +148,18 @@ class TestSubscribeButton:
 
 class TestUnsubscribeButton:
     async def test_unsubscribe(
-        self, bot, subscription_service, app_config, repo
+        self, bot, subscription_service, app_config, tg_repo
     ):
-        repo.add_subscriber(USER_ID)
+        tg_repo.add_subscriber(USER_ID)
 
         await process_unsubscribe_button(
             message_from(USER_ID), subscription_service, bot, app_config
         )
 
-        assert repo.is_subscriber(USER_ID) is False
-        assert repo.get_bot_user(USER_ID).status is (BotUserStatus.UNSUBSCRIBED)
+        assert tg_repo.is_subscriber(USER_ID) is False
+        assert tg_repo.get_bot_user(USER_ID).status is (
+            BotUserStatus.UNSUBSCRIBED
+        )
         assert bot.texts_for(USER_ID) == [LEXICON.Message.UNSUBBED]
         assert bot.texts_for(ADMIN_ID) == ["Иван Петров отписался"]
 
@@ -220,7 +224,7 @@ class TestReviewApplications:
         app_config,
         bot_user_service,
         admin_state,
-        repo,
+        tg_repo,
     ):
         for user_id in (1, 2):
             await subscribe(
@@ -239,7 +243,7 @@ class TestReviewApplications:
             accept_message, subscription_service, admin_state, bot
         )
 
-        assert repo.is_subscriber(1) is True
+        assert tg_repo.is_subscriber(1) is True
         assert bot.texts_for(1)[-1] == LEXICON.Message.SUB_APPLICATION_ACCEPTED
         assert accept_message.answers[0].text == "Заявка от Иван2 Петров"
         assert await admin_state.get_value("application_user_id") == 2
@@ -249,7 +253,7 @@ class TestReviewApplications:
             decline_message, subscription_service, admin_state, bot
         )
 
-        assert repo.get_bot_user(2).status is BotUserStatus.REJECTED
+        assert tg_repo.get_bot_user(2).status is BotUserStatus.REJECTED
         assert bot.texts_for(2)[-1] == LEXICON.Message.SUB_APPLICATION_DECLINED
         assert decline_message.answers[0].text == (
             LEXICON.Message.NO_PENDING_APPLICATIONS
@@ -258,7 +262,7 @@ class TestReviewApplications:
         assert await admin_state.get_state() == default_state.state
 
     async def test_accept_without_application_in_state(
-        self, bot, subscription_service, admin_state, repo
+        self, bot, subscription_service, admin_state, tg_repo
     ):
         # например, после перезапуска бота данные FSM потеряны
         message = message_from(ADMIN_ID)

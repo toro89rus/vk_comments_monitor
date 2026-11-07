@@ -4,11 +4,11 @@ from aiogram import Bot, F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
-import tatd_bot.tg.keyboards.keyboards as KEYBOARDS
+import tatd_bot.tg.keyboards as KEYBOARDS
 from tatd_bot.config.config import AppConfig
 from tatd_bot.tg import lexicon as LEXICON
-from tatd_bot.tg.mappers.mappers import map_tg_to_bot_user
-from tatd_bot.tg.services.services import (
+from tatd_bot.tg.mappers import map_tg_to_bot_user
+from tatd_bot.tg.services import (
     BotUserService,
     CreateSubRequestResult,
     TgSubscriptionService,
