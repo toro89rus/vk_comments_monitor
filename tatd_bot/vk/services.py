@@ -129,22 +129,24 @@ class VkFeedService:
         self.message_service = message_service
         self.repo = repo
 
-    def get_new_comments(self) -> list[Post]:
+    async def get_new_comments(self) -> list[Post]:
         logger.info("Started new comments collecting")
-        recent_posts = self._get_recent_posts_with_comments()
+        recent_posts = await self._get_recent_posts_with_comments()
         posts_with_new_comments = []
         for post in recent_posts:
-            if post_new_comments := self._get_new_comments_for_post(post):
+            if post_new_comments := await self._get_new_comments_for_post(post):
                 posts_with_new_comments.append(post_new_comments)
         if posts_with_new_comments:
             authors_ids = self._collect_author_ids(posts_with_new_comments)
-            self._update_authors_names(authors_ids)
+            await self._update_authors_names(authors_ids)
         return posts_with_new_comments
 
-    def _get_recent_posts_with_comments(self, days: int = 7) -> list[dict]:
+    async def _get_recent_posts_with_comments(
+        self, days: int = 7
+    ) -> list[dict]:
         end_date = date.today()
         start_date = end_date - timedelta(days=days)
-        posts = self.api.get_posts()
+        posts = await self.api.get_posts()
         recent_posts_with_comments = []
         for post in posts:
             post_date = date.fromtimestamp(post["date"])
@@ -153,9 +155,9 @@ class VkFeedService:
                 recent_posts_with_comments.append(post)
         return recent_posts_with_comments
 
-    def _get_new_comments_for_post(self, vk_post: dict) -> Post | None:
+    async def _get_new_comments_for_post(self, vk_post: dict) -> Post | None:
         post_new_comments = []
-        post_comments = self.api.get_comments(vk_post["id"])
+        post_comments = await self.api.get_comments(vk_post["id"])
 
         for comment in post_comments:
             formatted_comment = self._format_comment(comment)
@@ -208,17 +210,19 @@ class VkFeedService:
 
         return {"users_ids": users_ids, "groups_ids": groups_ids}
 
-    def _update_authors_names(self, authors_ids: dict[str, set[int]]) -> None:
+    async def _update_authors_names(
+        self, authors_ids: dict[str, set[int]]
+    ) -> None:
         users_to_fetch = authors_ids["users_ids"]
         groups_to_fetch = authors_ids["groups_ids"]
 
         if users_to_fetch:
-            vk_users = self.api.get_users_names(users_to_fetch)
+            vk_users = await self.api.get_users_names(users_to_fetch)
             if vk_users:
                 self.author_service.update_users_from_vk(vk_users)
 
         if groups_to_fetch:
-            vk_groups = self.api.get_groups_names(groups_to_fetch)
+            vk_groups = await self.api.get_groups_names(groups_to_fetch)
             if vk_groups:
                 self.author_service.update_groups_from_vk(vk_groups)
 

@@ -33,7 +33,7 @@ class VkCommentsMonitorService:
         while True:
             try:
                 logger.info("Started comments monitoring")
-                new_vk_comments = self.feed_service.get_new_comments()
+                new_vk_comments = await self.feed_service.get_new_comments()
                 if new_vk_comments:
                     total_comments = sum(
                         len(post.comments) for post in new_vk_comments

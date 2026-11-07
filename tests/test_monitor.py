@@ -25,7 +25,7 @@ class FakeFeedService:
         self.saved: list[list[Post]] = []
         self.error: Exception | None = None
 
-    def get_new_comments(self) -> list[Post]:
+    async def get_new_comments(self) -> list[Post]:
         if self.error:
             raise self.error
         return self.posts

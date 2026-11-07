@@ -1,20 +1,35 @@
 import logging
 
-import requests
+import aiohttp
 
 from tatd_bot.config import AppConfig
 
 logger = logging.getLogger(__name__)
 
+REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=10)
+
 
 class VkApiService:
-    def __init__(self, config: AppConfig):
+    def __init__(
+        self, config: AppConfig, session: aiohttp.ClientSession | None = None
+    ):
         self.api_version = config.vk.api_version
         self.vk_url = config.vk.vk_url
         self.token = config.vk.token
         self.group_id = config.vk.group_id
+        self._session = session
 
-    def _make_vk_call(self, method: str, *args, **params) -> dict:
+    def _get_session(self) -> aiohttp.ClientSession:
+        # сессию создаём внутри работающего event loop, при первом запросе
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession()
+        return self._session
+
+    async def close(self) -> None:
+        if self._session is not None:
+            await self._session.close()
+
+    async def _make_vk_call(self, method: str, *args, **params) -> dict:
         url = f"{self.vk_url}/{method}"
         params["access_token"] = self.token
         params["v"] = self.api_version
@@ -22,8 +37,10 @@ class VkApiService:
             if isinstance(value, (list, tuple, set)):
                 params[key] = ",".join(map(str, value))
         try:
-            r = requests.get(url, params=params, timeout=10)
-            vk_response = r.json()
+            async with self._get_session().get(
+                url, params=params, timeout=REQUEST_TIMEOUT
+            ) as r:
+                vk_response = await r.json(content_type=None)
         except Exception:
             logger.exception("VK API network error while calling %s", method)
             return {}
@@ -44,21 +61,21 @@ class VkApiService:
 
         return vk_response
 
-    def get_posts(self, count=20) -> list[dict]:
-        api_response = self._make_vk_call(
+    async def get_posts(self, count=20) -> list[dict]:
+        api_response = await self._make_vk_call(
             "wall.get", owner_id=self.group_id, count=count
         )
         if not api_response or "response" not in api_response:
             return []
         return api_response["response"].get("items", [])
 
-    def get_comments(
+    async def get_comments(
         self,
         post_id: int,
         thread_items_count: int = 10,
         count: int = 100,
     ) -> list[dict]:
-        api_response = self._make_vk_call(
+        api_response = await self._make_vk_call(
             "wall.getComments",
             owner_id=self.group_id,
             post_id=post_id,
@@ -70,16 +87,18 @@ class VkApiService:
             return []
         return api_response["response"].get("items", [])
 
-    def get_users_names(self, users_id: set | list) -> list[dict]:
-        api_response = self._make_vk_call(
+    async def get_users_names(self, users_id: set | list) -> list[dict]:
+        api_response = await self._make_vk_call(
             "users.get", user_ids=users_id, fields=("sex",)
         )
         if not api_response or "response" not in api_response:
             return []
         return api_response.get("response", [])
 
-    def get_groups_names(self, group_ids: set | list) -> list[dict]:
-        api_response = self._make_vk_call("groups.getById", group_ids=group_ids)
+    async def get_groups_names(self, group_ids: set | list) -> list[dict]:
+        api_response = await self._make_vk_call(
+            "groups.getById", group_ids=group_ids
+        )
         if not api_response or "response" not in api_response:
             return []
         return api_response["response"].get("groups", [])

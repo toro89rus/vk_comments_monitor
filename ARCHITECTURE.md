@@ -15,7 +15,9 @@ Telegram-бот для сотрудников театра (группа VK `tul
 - aiogram 3 — Telegram, long polling. FSM-хранилище по умолчанию, в памяти.
 - Redis — всё состояние: подписчики, обработанные комментарии, кэш имён авторов VK.
   Клиент синхронный (`redis.Redis`).
-- VK API — `requests`, синхронно, версия API 5.199.
+- VK API — `aiohttp`, async, версия API 5.199. Запросы к VK идут строго по одному (у VK лимит частоты):
+  async нужен, чтобы проход мониторинга не блокировал бота, а не для параллельных запросов. Это закреплено
+  тестом `TestVkRequestsAreSequential`.
 - petrovich — склонение имён авторов («Комментарий от Ивана Петрова»).
 - Запуск — Docker Compose: контейнеры `tatd_bot` и `redis` (данные в volume `redis_data`).
 
@@ -30,7 +32,7 @@ tatd_bot/
   redis_client.py     create_redis_client — клиент Redis из конфига, общий для обоих хранилищ
   utils/time_utils.py unix-время → datetime в Europe/Moscow
   vk/
-    api.py            VkApiService — HTTP-вызовы VK API
+    api.py            VkApiService — HTTP-вызовы VK API (одна aiohttp-сессия, закрывается при остановке бота)
     models.py         Group, User (со склонением), Comment, Reply, Post
     registry.py       AuthorsRegistry — кэш авторов в памяти процесса
     mappers.py        JSON VK → модели
