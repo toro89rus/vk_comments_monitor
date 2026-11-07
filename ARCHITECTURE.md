@@ -160,7 +160,10 @@ TTL комментариев (8 дней) больше окна монитори
 - `make start-vk` / `cron-vk_monitor` запускают `scripts/vk_comments_monitor.py` — остаток схемы до
   перехода на aiogram 3 (`f2d8b18`), когда мониторинг запускался по крону. Compose его не вызывает.
   Цели `start-ya_maps` / `cron-ya_maps` ссылаются на модуль, которого нет в git.
-- Проверки: `make test` = `ruff check`. Тестов нет. CI нет.
+- Проверки: `make check` — `ruff format --check`, `ruff check`, `pytest` (по отдельности: `make format`,
+  `make lint`, `make test`). Тесты — `tests/` (pytest, pytest-asyncio в режиме auto, fakeredis).
+  Старые нарушения правил ruff помечены `# noqa`. CI нет.
+- `make install` (= `uv sync`) ставит и dev-зависимости, в том числе в Docker-образ.
 
 ## Известные проблемы
 

@@ -32,7 +32,7 @@ def main():
             comment_id = latest_vk_comments[post_id]["comment_id"]
             r.set(f"post:{post_id}:last_comment", comment_id, ex=604800)
             logger.info("Migrated post %s → comment %s", post_id, comment_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error("Failed to migrate %s: %s", post_id, e)
 
     r.close()
