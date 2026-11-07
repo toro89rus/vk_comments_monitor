@@ -68,6 +68,21 @@ class TestRequest:
         assert params["access_token"] == "vk-test-token"
         assert params["v"] == "5.199"
 
+    @pytest.mark.parametrize(
+        "call",
+        [
+            lambda api: api.get_posts(),
+            lambda api: api.get_comments(1),
+            lambda api: api.get_users_names([1]),
+            lambda api: api.get_groups_names([1]),
+        ],
+        ids=["wall.get", "wall.getComments", "users.get", "groups.getById"],
+    )
+    async def test_every_request_asks_for_russian(self, api, http_get, call):
+        await call(api)
+
+        assert call_params(http_get)["lang"] == "ru"
+
     async def test_list_params_are_joined_with_commas(self, api, http_get):
         http_get.return_value = vk_response({"response": []})
 

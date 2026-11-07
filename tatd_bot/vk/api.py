@@ -9,6 +9,8 @@ from tatd_bot.config import AppConfig
 logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=10)
+# Без lang VK выбирает язык сам и с сервера отдаёт имена латиницей
+VK_LANG = "ru"
 
 
 class VkApiService:
@@ -38,6 +40,7 @@ class VkApiService:
         url = f"{self.vk_url}/{method}"
         params["access_token"] = self.token
         params["v"] = self.api_version
+        params["lang"] = VK_LANG
         for key, value in list(params.items()):
             if isinstance(value, (list, tuple, set)):
                 params[key] = ",".join(map(str, value))
