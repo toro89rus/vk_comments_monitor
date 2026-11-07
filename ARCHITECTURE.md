@@ -71,8 +71,9 @@ TgSubscriptionService(config, repo)
 BotUserService(repo)
 ```
 
-В хендлеры через `dp[...]` передаются `config`, `repo`, `subsciption_service` (опечатка в ключе — он же
-имя аргумента во всех хендлерах) и `bot_user_service`. Мониторинг запускается `asyncio.create_task`
+В хендлеры через `dp[...]` передаются `config`, `repo`, `subscription_service` и
+`bot_user_service`. Ключ в `dp` совпадает с именем аргумента хендлера, по нему aiogram и подставляет
+зависимость. Мониторинг запускается `asyncio.create_task`
 в том же event loop, что и polling.
 
 ## Поток: мониторинг комментариев
@@ -165,7 +166,8 @@ TTL комментариев (8 дней) больше окна монитори
   `make lint`, `make test`). Тесты — `tests/` (pytest, pytest-asyncio в режиме auto, fakeredis).
   Старые нарушения правил ruff помечены `# noqa`.
 - CI: `.github/workflows/check.yml` — `make check` на каждый PR в `main` и на каждый пуш в `main`
-  (job `check`). Деплой от CI пока не зависит: `deploy.sh` подтягивает `main`, не глядя на результат.
+  (job `check`). `main` защищён на GitHub (ruleset): мерж только через PR с зелёным `check`, без
+  force push и удаления. Сам `deploy.sh` результат CI не проверяет.
 - `make install` (= `uv sync`) ставит и dev-зависимости, в том числе в Docker-образ.
 
 ## Проблемы и планы

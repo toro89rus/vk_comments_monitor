@@ -157,5 +157,5 @@ class BotUserService:
     def get_user(self, user_id: int) -> BotUser | None:
         return self.repo.get_bot_user(user_id)
 
-    def save_user_info(self, user: BotUser) -> BotUser:
+    def save_user_info(self, user: BotUser) -> None:
         self.repo.save_bot_user_info(user)

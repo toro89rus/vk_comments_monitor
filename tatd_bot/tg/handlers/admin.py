@@ -21,10 +21,10 @@ admin_router = Router()
 @admin_router.message(IsAdmin(), F.text == LEXICON.Button.REVIEW_PENDING_SUBS)
 async def review_applications(
     message: Message,
-    subsciption_service: TgSubscriptionService,
+    subscription_service: TgSubscriptionService,
     state: FSMContext,
 ):
-    applications = subsciption_service.get_pending_subscribers()
+    applications = subscription_service.get_pending_subscribers()
     if not applications:
         await message.answer(LEXICON.Message.NO_PENDING_APPLICATIONS)
     else:
@@ -34,15 +34,15 @@ async def review_applications(
                 len=len(applications)
             )
         )
-        await send_application(message, subsciption_service, state)
+        await send_application(message, subscription_service, state)
 
 
 async def send_application(
     message: Message,
-    subsciption_service: TgSubscriptionService,
+    subscription_service: TgSubscriptionService,
     state: FSMContext,
 ):
-    application_user = subsciption_service.get_pending_application_user()
+    application_user = subscription_service.get_pending_application_user()
     if not application_user:
         await message.answer(
             LEXICON.Message.NO_PENDING_APPLICATIONS,
@@ -66,7 +66,7 @@ async def send_application(
 )
 async def accept_subscriber(
     message: Message,
-    subsciption_service: TgSubscriptionService,
+    subscription_service: TgSubscriptionService,
     state: FSMContext,
     bot: Bot,
 ):
@@ -74,12 +74,12 @@ async def accept_subscriber(
         "application_user_id"
     )
     if application_user_id:
-        subsciption_service.accept_subscriber(application_user_id)
+        subscription_service.accept_subscriber(application_user_id)
         await bot.send_message(
             application_user_id, LEXICON.Message.SUB_APPLICATION_ACCEPTED
         )
     await state.set_data({})
-    await send_application(message, subsciption_service, state)
+    await send_application(message, subscription_service, state)
 
 
 @admin_router.message(
@@ -89,7 +89,7 @@ async def accept_subscriber(
 )
 async def decline_subscriber(
     message: Message,
-    subsciption_service: TgSubscriptionService,
+    subscription_service: TgSubscriptionService,
     state: FSMContext,
     bot: Bot,
 ):
@@ -97,9 +97,9 @@ async def decline_subscriber(
         "application_user_id"
     )
     if application_user_id:
-        subsciption_service.decline_subscriber(application_user_id)
+        subscription_service.decline_subscriber(application_user_id)
         await bot.send_message(
             application_user_id, LEXICON.Message.SUB_APPLICATION_DECLINED
         )
     await state.set_data({})
-    await send_application(message, subsciption_service, state)
+    await send_application(message, subscription_service, state)

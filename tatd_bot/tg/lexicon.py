@@ -3,7 +3,6 @@ class Button:
     UNSUBSCRIBE = "Отписаться"
     ACCEPT_SUB = "Принять"
     DECLINE_SUB = "Отклонить"
-    SUBS_LIST = "Посмотреть подписчиков"
     REVIEW_PENDING_SUBS = "Обработать заявки"
 
 

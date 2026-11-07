@@ -43,7 +43,7 @@ async def process_start(
 async def process_subscribe_button(
     message: Message,
     bot: Bot,
-    subsciption_service: TgSubscriptionService,
+    subscription_service: TgSubscriptionService,
     config: AppConfig,
     bot_user_service: BotUserService,
 ):
@@ -54,7 +54,7 @@ async def process_subscribe_button(
         user = map_tg_to_bot_user(tg_user)
         bot_user_service.save_user_info(user)
 
-    result = await subsciption_service.request_subscription(user)
+    result = await subscription_service.request_subscription(user)
     if result == CreateSubRequestResult.ALREADY_SUBBED:
         await bot.send_message(user.id, LEXICON.Message.ALREADY_SUBBED)
     elif result == CreateSubRequestResult.ALREADY_PENDING:
@@ -73,13 +73,13 @@ async def process_subscribe_button(
 @user_router.message(F.text == LEXICON.Button.UNSUBSCRIBE)
 async def process_unsubscribe_button(
     message: Message,
-    subsciption_service: TgSubscriptionService,
+    subscription_service: TgSubscriptionService,
     bot: Bot,
     config: AppConfig,
 ):
     user = map_tg_to_bot_user(message.from_user)
     logger.info("%s pushed unsubscribe button", user.full_name)
-    result = await subsciption_service.unsubscribe(user)
+    result = await subscription_service.unsubscribe(user)
     keyboard = (
         KEYBOARDS.ADMIN_PANEL
         if user.id == config.tg.admin_id

@@ -46,12 +46,12 @@ async def run_bot():
         formatter=formatter,
         feed_service=vk_feed_service,
     )
-    subsciption_service = TgSubscriptionService(config, repo)
+    subscription_service = TgSubscriptionService(config, repo)
     bot_user_service = BotUserService(repo)
 
     dp["config"] = config
     dp["repo"] = repo
-    dp["subsciption_service"] = subsciption_service
+    dp["subscription_service"] = subscription_service
     dp["bot_user_service"] = bot_user_service
 
     dp.include_router(user_router)
