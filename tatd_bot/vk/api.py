@@ -70,28 +70,6 @@ class VkApiService:
             return []
         return api_response["response"].get("items", [])
 
-    def get_user_name(self, user_id: int) -> str:
-        api_response = self._make_vk_call("users.get", user_ids=user_id)
-        if not api_response or "response" not in api_response:
-            return "Неизвестный пользователь"
-        items = api_response["response"]
-        if not items:
-            return "Неизвестный пользователь"
-        user = items[0]
-        first_name = user.get("first_name", "")
-        last_name = user.get("last_name", "")
-        user_name = f"{first_name} {last_name}".strip()
-        return user_name or "Неизвестный пользователь"
-
-    def get_group_name(self, group_id: int) -> str:
-        api_response = self._make_vk_call("groups.getById", group_id=group_id)
-        if not api_response or "response" not in api_response:
-            return "Неизвестное сообщество"
-        groups = api_response["response"].get("groups", [])
-        if not groups:
-            return "Неизвестное сообщество"
-        return groups[0].get("name", "Неизвестное сообщество")
-
     def get_users_names(self, users_id: set | list) -> list[dict]:
         api_response = self._make_vk_call(
             "users.get", user_ids=users_id, fields=("sex",)
