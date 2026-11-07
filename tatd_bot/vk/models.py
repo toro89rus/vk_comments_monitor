@@ -14,7 +14,6 @@ class Group:
     name: str | None = None
 
     kind: ClassVar[str] = "group"
-    cache: ClassVar[dict] = {}
 
     def __str__(self):
         if self.name:
@@ -42,10 +41,8 @@ class User:
     first_name: str | None = None
     last_name: str | None = None
     gender: str | None = None
-    # has_full_name: bool = False ?
 
     kind: ClassVar[str] = "user"
-    cache: ClassVar[dict] = {}
 
     def _in_case(self, case: Case):
         if not all((self.first_name, self.last_name, self.gender)):
@@ -59,7 +56,6 @@ class User:
 
     @property
     def name(self):
-        # if self.name: return self.name ???
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
         return None
@@ -104,7 +100,6 @@ class Comment:
     replies: list[Reply]
     is_new: Optional[bool] = None
 
-    # @property?
     def has_new_activity(self) -> bool:
         if self.is_new and self.text:
             return True
