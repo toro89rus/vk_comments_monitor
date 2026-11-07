@@ -2,6 +2,7 @@ import time
 
 import redis
 
+from tatd_bot.config.config import RedisConfig
 from tatd_bot.tg.mappers.mappers import (
     map_bot_user_to_redis,
     map_redis_to_bot_user,
@@ -19,9 +20,16 @@ USER_TTL = 2592000
 COMMENT_TTL = 8 * 24 * 60 * 60
 
 
+REDIS_PORT = 6379
+
+
+def create_redis_client(config: RedisConfig) -> redis.Redis:
+    return redis.Redis(host=config.host, port=REDIS_PORT, decode_responses=True)
+
+
 class Repository:
-    def __init__(self, redis_host):
-        self.r = redis.Redis(host=redis_host, port=6379, decode_responses=True)
+    def __init__(self, client: redis.Redis):
+        self.r = client
 
     def _make_redis_key(self, template_name: str, **kwargs: dict) -> str:
         return template_name.format(**kwargs)

@@ -3,10 +3,20 @@ from unittest.mock import patch
 import pytest
 from petrovich.enums import Gender
 
-from tatd_bot.repository import COMMENT_TTL, USER_TTL
+from tatd_bot.config.config import RedisConfig
+from tatd_bot.repository import COMMENT_TTL, USER_TTL, create_redis_client
 from tatd_bot.tg.models.models import BotUser, BotUserStatus
 
 DAY = 24 * 60 * 60
+
+
+def test_create_redis_client_settings():
+    client = create_redis_client(RedisConfig(host="redis"))
+
+    kwargs = client.connection_pool.connection_kwargs
+    assert kwargs["host"] == "redis"
+    assert kwargs["port"] == 6379
+    assert kwargs["decode_responses"] is True
 
 
 def test_ttl_values():

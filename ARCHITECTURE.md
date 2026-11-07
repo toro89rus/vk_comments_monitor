@@ -57,7 +57,7 @@ tatd_bot/
 Внедрения зависимостей через фреймворк нет. Всё собирается вручную в `bot.py: run_bot()`:
 
 ```
-Repository(redis_host)
+Repository(create_redis_client(config.redis))
 VkApiService(config)
 AuthorsRegistry()
 VkAuthorService(registry, repo)
