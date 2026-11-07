@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message
 
-import tatd_bot.tg.keyboards.keyboards as KEYBOARDS
+import tatd_bot.tg.keyboards as KEYBOARDS
 from tatd_bot.tg import lexicon as LEXICON
 from tatd_bot.tg.filters.filters import IsAdmin
 from tatd_bot.tg.services import TgSubscriptionService
