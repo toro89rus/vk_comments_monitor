@@ -1,9 +1,12 @@
 .git/
-.ruff_cahe/
+.ruff_cache/
+.pytest_cache/
+**/__pycache__/
 .venv/
 assets/
 logs/
 screenshots/
 storage/
 .env
-.gitignore/
+vk_config.v2.json
+.gitignore

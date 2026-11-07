@@ -15,5 +15,5 @@ install:
 	uv sync
 
 run:
-	uv run -m tatd_bot.bot
+	uv run --locked --no-dev -m tatd_bot.bot
 
