@@ -3,10 +3,10 @@ from datetime import datetime
 from unittest.mock import patch
 
 import pytest
-from aiogram.exceptions import TelegramRetryAfter
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.methods import SendMessage
 
-from tatd_bot.monitor import VkCommentsMonitorService
+from tatd_bot.monitor import MAX_SEND_RETRIES, VkCommentsMonitorService
 from tatd_bot.tg.formatters import TgMessageFormatter
 from tatd_bot.tg.models import BotUser, BotUserStatus
 from tatd_bot.vk.models import Comment, Post, Reply, User
@@ -69,13 +69,28 @@ def monitor_service(app_config, tg_repo, bot, feed_service):
     )
 
 
-async def run_one_pass(monitor_service) -> None:
-    with patch(
-        "tatd_bot.monitor.asyncio.sleep",
-        side_effect=StopMonitor,
-    ):
+def retry_after(chat_id: int, seconds: int = 5) -> TelegramRetryAfter:
+    return TelegramRetryAfter(
+        method=SendMessage(chat_id=chat_id, text=""),
+        message="Too Many Requests",
+        retry_after=seconds,
+    )
+
+
+async def run_one_pass(monitor_service) -> list[float]:
+    """Один проход monitor(). Возвращает паузы внутри прохода, паузу
+    update_delay между проходами — нет: на ней цикл прерывается."""
+    pauses: list[float] = []
+
+    async def fake_sleep(delay: float) -> None:
+        if delay == monitor_service.config.vk.update_delay:
+            raise StopMonitor
+        pauses.append(delay)
+
+    with patch("tatd_bot.monitor.asyncio.sleep", side_effect=fake_sleep):
         with pytest.raises(StopMonitor):
             await monitor_service.monitor()
+    return pauses
 
 
 class TestMonitor:
@@ -165,25 +180,51 @@ class TestMonitor:
         assert len(bot.texts_for(2)) == 4
         assert feed_service.saved == [feed_service.posts]
 
-    async def test_other_telegram_error_aborts_pass_without_saving(
+    async def test_retry_after_waits_and_resends(
+        self, monitor_service, tg_repo, bot, feed_service
+    ):
+        await tg_repo.add_subscriber(1)
+        bot.pending_errors = {1: [retry_after(1, 5), retry_after(1, 7)]}
+
+        pauses = await run_one_pass(monitor_service)
+
+        assert pauses == [5, 7]
+        assert len(bot.texts_for(1)) == 4
+        assert feed_service.saved == [feed_service.posts]
+
+    async def test_retry_after_gives_up_after_max_retries(
+        self, monitor_service, tg_repo, bot, feed_service
+    ):
+        await tg_repo.add_subscriber(1)
+        await tg_repo.add_subscriber(2)
+        bot.errors = {1: retry_after(1)}
+
+        pauses = await run_one_pass(monitor_service)
+
+        assert pauses == [5] * MAX_SEND_RETRIES
+        assert bot.texts_for(1) == []
+        assert len(bot.texts_for(2)) == 4
+        assert sorted(await tg_repo.get_subscribers()) == [1, 2]
+        assert feed_service.saved == [feed_service.posts]
+
+    async def test_other_telegram_error_skips_only_that_subscriber(
         self, monitor_service, tg_repo, bot, feed_service
     ):
         await tg_repo.add_subscriber(1)
         await tg_repo.add_subscriber(2)
         bot.errors = {
-            1: TelegramRetryAfter(
+            1: TelegramBadRequest(
                 method=SendMessage(chat_id=1, text=""),
-                message="Too Many Requests",
-                retry_after=5,
+                message="Bad Request: chat not found",
             )
         }
 
-        await run_one_pass(monitor_service)
+        pauses = await run_one_pass(monitor_service)
 
-        # текущее поведение: подписчик 2 всё получил, но состояние не
-        # сохранено, и на следующем проходе он получит то же самое
+        assert pauses == []
         assert len(bot.texts_for(2)) == 4
-        assert feed_service.saved == []
+        assert sorted(await tg_repo.get_subscribers()) == [1, 2]
+        assert feed_service.saved == [feed_service.posts]
 
     async def test_feed_error_does_not_stop_monitor(
         self, monitor_service, bot, feed_service

@@ -14,15 +14,6 @@
 
 ## Баги
 
-### B1. Сбой рассылки одному подписчику — повтор всем · высокий
-
-Рассылка идёт всем подписчикам параллельно, без учёта лимитов Telegram. Любая ошибка, кроме
-`TelegramForbiddenError` (например `TelegramRetryAfter`), роняет весь проход. Остальные подписчики сообщения
-уже получили, но `save_comments_cache` не вызывается. На следующем проходе все получат то же самое ещё раз.
-
-- Где: `VkCommentsMonitorService._notify_subscribers` / `_send_to_subscriber` (`tatd_bot/monitor.py`).
-- Тест: `tests/test_monitor.py::TestMonitor::test_other_telegram_error_aborts_pass_without_saving`.
-
 ### B2. «Комментарий от None» · средний
 
 Если имя автора не пришло из VK, `name_gen` / `name_dat` у `User` и `Group` возвращают `None`, и в сообщение
