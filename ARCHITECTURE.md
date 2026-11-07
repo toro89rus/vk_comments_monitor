@@ -38,7 +38,7 @@ tatd_bot/
   tg/
     handlers/user.py  /start, «Подписаться», «Отписаться»
     handlers/admin.py разбор заявок администратором
-    services/services.py VkCommentsMonitorService (цикл мониторинга и рассылка),
+    services.py       VkCommentsMonitorService (цикл мониторинга и рассылка),
                       TgSubscriptionService, BotUserService
     formatters.py     TgMessageFormatter — модели VK → текст сообщений
     models/models.py  BotUser, BotUserStatus

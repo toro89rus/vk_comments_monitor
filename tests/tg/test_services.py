@@ -8,7 +8,7 @@ from aiogram.methods import SendMessage
 
 from tatd_bot.tg.formatters import TgMessageFormatter
 from tatd_bot.tg.models.models import BotUser, BotUserStatus
-from tatd_bot.tg.services.services import (
+from tatd_bot.tg.services import (
     BotUserService,
     CreateSubRequestResult,
     TgSubscriptionService,
@@ -196,7 +196,7 @@ def monitor_service(app_config, repo, bot, feed_service):
 
 async def run_one_pass(monitor_service) -> None:
     with patch(
-        "tatd_bot.tg.services.services.asyncio.sleep",
+        "tatd_bot.tg.services.asyncio.sleep",
         side_effect=StopMonitor,
     ):
         with pytest.raises(StopMonitor):
@@ -242,7 +242,7 @@ class TestMonitor:
         self, monitor_service, app_config
     ):
         with patch(
-            "tatd_bot.tg.services.services.asyncio.sleep",
+            "tatd_bot.tg.services.asyncio.sleep",
             side_effect=StopMonitor,
         ) as sleep:
             with pytest.raises(StopMonitor):
@@ -313,7 +313,7 @@ class TestMonitor:
 
     async def test_cancellation_stops_monitor(self, monitor_service):
         with patch(
-            "tatd_bot.tg.services.services.asyncio.sleep",
+            "tatd_bot.tg.services.asyncio.sleep",
             side_effect=asyncio.CancelledError,
         ):
             with pytest.raises(asyncio.CancelledError):

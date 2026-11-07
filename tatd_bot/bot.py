@@ -8,7 +8,7 @@ from tatd_bot.repository import Repository, create_redis_client
 from tatd_bot.tg.formatters import TgMessageFormatter
 from tatd_bot.tg.handlers.admin import admin_router
 from tatd_bot.tg.handlers.user import user_router
-from tatd_bot.tg.services.services import (
+from tatd_bot.tg.services import (
     BotUserService,
     TgSubscriptionService,
     VkCommentsMonitorService,
