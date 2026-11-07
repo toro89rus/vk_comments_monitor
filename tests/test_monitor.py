@@ -59,10 +59,10 @@ def feed_service():
 
 
 @pytest.fixture
-def monitor_service(app_config, repo, bot, feed_service):
+def monitor_service(app_config, tg_repo, bot, feed_service):
     return VkCommentsMonitorService(
         config=app_config,
-        repo=repo,
+        repo=tg_repo,
         bot=bot,
         formatter=TgMessageFormatter(app_config),
         feed_service=feed_service,
@@ -80,9 +80,9 @@ async def run_one_pass(monitor_service) -> None:
 
 class TestMonitor:
     async def test_sends_post_comments_and_replies_in_order(
-        self, monitor_service, repo, bot
+        self, monitor_service, tg_repo, bot
     ):
-        repo.add_subscriber(1)
+        tg_repo.add_subscriber(1)
 
         await run_one_pass(monitor_service)
 
@@ -93,8 +93,10 @@ class TestMonitor:
         assert texts[2].endswith("\n\nОтвет 11")
         assert texts[3].endswith("\n\nКомментарий 12")
 
-    async def test_only_post_is_sent_as_html(self, monitor_service, repo, bot):
-        repo.add_subscriber(1)
+    async def test_only_post_is_sent_as_html(
+        self, monitor_service, tg_repo, bot
+    ):
+        tg_repo.add_subscriber(1)
 
         await run_one_pass(monitor_service)
 
@@ -102,10 +104,10 @@ class TestMonitor:
         assert [m.parse_mode for m in bot.sent] == ["html", None, None, None]
 
     async def test_sends_to_every_subscriber_and_saves_cache(
-        self, monitor_service, repo, bot, feed_service
+        self, monitor_service, tg_repo, bot, feed_service
     ):
-        repo.add_subscriber(1)
-        repo.add_subscriber(2)
+        tg_repo.add_subscriber(1)
+        tg_repo.add_subscriber(2)
 
         await run_one_pass(monitor_service)
 
@@ -125,8 +127,10 @@ class TestMonitor:
 
         sleep.assert_called_once_with(app_config.vk.update_delay)
 
-    async def test_nothing_new(self, monitor_service, repo, bot, feed_service):
-        repo.add_subscriber(1)
+    async def test_nothing_new(
+        self, monitor_service, tg_repo, bot, feed_service
+    ):
+        tg_repo.add_subscriber(1)
         feed_service.posts = []
 
         await run_one_pass(monitor_service)
@@ -143,25 +147,27 @@ class TestMonitor:
         assert feed_service.saved == [feed_service.posts]
 
     async def test_blocked_subscriber_is_unsubscribed(
-        self, monitor_service, repo, bot, feed_service
+        self, monitor_service, tg_repo, bot, feed_service
     ):
         for user_id in (1, 2):
-            repo.add_subscriber(user_id)
-            repo.save_bot_user_info(bot_user(user_id, BotUserStatus.SUBSCRIBED))
+            tg_repo.add_subscriber(user_id)
+            tg_repo.save_bot_user_info(
+                bot_user(user_id, BotUserStatus.SUBSCRIBED)
+            )
         bot.blocked_by = {1}
 
         await run_one_pass(monitor_service)
 
-        assert repo.get_subscribers() == [2]
-        assert repo.get_bot_user(1).status is BotUserStatus.UNSUBSCRIBED
+        assert tg_repo.get_subscribers() == [2]
+        assert tg_repo.get_bot_user(1).status is BotUserStatus.UNSUBSCRIBED
         assert len(bot.texts_for(2)) == 4
         assert feed_service.saved == [feed_service.posts]
 
     async def test_other_telegram_error_aborts_pass_without_saving(
-        self, monitor_service, repo, bot, feed_service
+        self, monitor_service, tg_repo, bot, feed_service
     ):
-        repo.add_subscriber(1)
-        repo.add_subscriber(2)
+        tg_repo.add_subscriber(1)
+        tg_repo.add_subscriber(2)
         bot.errors = {
             1: TelegramRetryAfter(
                 method=SendMessage(chat_id=1, text=""),

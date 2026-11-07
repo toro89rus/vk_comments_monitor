@@ -1,8 +1,8 @@
 from enum import Enum
 
 from tatd_bot.config import AppConfig
-from tatd_bot.repository import Repository
 from tatd_bot.tg.models import BotUser, BotUserStatus
+from tatd_bot.tg.repository import TgRepository
 
 
 class CreateSubRequestResult(Enum):
@@ -17,7 +17,7 @@ class UnsubscribeResult(Enum):
 
 
 class TgSubscriptionService:
-    def __init__(self, config: AppConfig, repo: Repository):
+    def __init__(self, config: AppConfig, repo: TgRepository):
         self.config = config
         self.repo = repo
 
@@ -63,7 +63,7 @@ class TgSubscriptionService:
 
 
 class BotUserService:
-    def __init__(self, repo: Repository):
+    def __init__(self, repo: TgRepository):
         self.repo = repo
 
     def get_user(self, user_id: int) -> BotUser | None:

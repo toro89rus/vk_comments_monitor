@@ -2,7 +2,6 @@ import time
 
 import redis
 
-from tatd_bot.config.config import RedisConfig
 from tatd_bot.tg.mappers import (
     map_bot_user_to_redis,
     map_redis_to_bot_user,
@@ -12,76 +11,14 @@ from tatd_bot.tg.models import BotUser
 SUBSCRIBERS = "subscribers"
 PENDING_SUBSCRIBERS = "pending_subscribers"
 BOT_USERS_INFO = "bot_user:{user_id}"
-COMMENT_TEMPLATE = "comment:{comment_id}"
-USER_TEMPLATE = "user:{user_id}"
-GROUP_NAME_KEY_TEMPLATE = "group:{group_id}:name"
-
-USER_TTL = 2592000
-COMMENT_TTL = 8 * 24 * 60 * 60
 
 
-def create_redis_client(config: RedisConfig) -> redis.Redis:
-    return redis.Redis(
-        host=config.host, port=config.port, decode_responses=True
-    )
-
-
-class Repository:
+class TgRepository:
     def __init__(self, client: redis.Redis):
         self.r = client
 
     def _make_redis_key(self, template_name: str, **kwargs: dict) -> str:
         return template_name.format(**kwargs)
-
-    def get_user(self, user_id: int) -> dict[str, str]:
-        key = self._make_redis_key(USER_TEMPLATE, user_id=user_id)
-        return self.r.hgetall(key)
-
-    def save_user(
-        self, user_id: int, first_name: str, last_name: str, gender: str
-    ) -> None:
-        key = self._make_redis_key(USER_TEMPLATE, user_id=user_id)
-        self.r.hset(
-            key,
-            mapping={
-                "first_name": first_name,
-                "last_name": last_name,
-                "gender": gender,
-            },
-        )
-
-        self.r.expire(key, USER_TTL)
-
-    def get_group_name(self, group_id: int) -> str | None:
-        key = self._make_redis_key(GROUP_NAME_KEY_TEMPLATE, group_id=group_id)
-        return self.r.hget(key, "name")
-
-    def save_group_name(self, group_id: int, group_name: str) -> None:
-        key = self._make_redis_key(GROUP_NAME_KEY_TEMPLATE, group_id=group_id)
-        self.r.hset(key, "name", group_name)
-        self.r.expire(key, USER_TTL)
-
-    def is_comment_processed(self, comment_id: int) -> bool:
-        key = self._make_redis_key(COMMENT_TEMPLATE, comment_id=comment_id)
-        value = self.r.hget(key, "is_processed")
-        return value == "1"
-
-    def process_comment(self, comment_id: int) -> None:
-        key = self._make_redis_key(COMMENT_TEMPLATE, comment_id=comment_id)
-        self.r.hset(key, "is_processed", 1)
-        self.r.expire(key, COMMENT_TTL)
-
-    def save_last_reply_id(self, comment_id: int, reply_id: int) -> None:
-        key = self._make_redis_key(COMMENT_TEMPLATE, comment_id=comment_id)
-        self.r.hset(key, "last_reply_id", reply_id)
-        self.r.expire(key, COMMENT_TTL)
-
-    def get_last_reply_id(self, comment_id: int) -> int | None:
-        key = self._make_redis_key(COMMENT_TEMPLATE, comment_id=comment_id)
-        value = self.r.hget(key, "last_reply_id")
-        if value:
-            return int(value)
-        return None
 
     def add_subscriber(self, user_id: int) -> None:
         self.r.sadd(SUBSCRIBERS, user_id)

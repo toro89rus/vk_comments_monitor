@@ -3,19 +3,19 @@ from datetime import date, timedelta
 
 from petrovich.enums import Gender
 
-from tatd_bot.repository import Repository
 from tatd_bot.utils.time_utils import get_msk_time
 from tatd_bot.vk.api import VkApiService
 from tatd_bot.vk.mappers import vk_to_post, vk_to_vk_user_base_data
 from tatd_bot.vk.models import Comment, Group, Post, Reply, User
 from tatd_bot.vk.registry import AuthorsRegistry
+from tatd_bot.vk.repository import VkRepository
 from tatd_bot.vk.text_formatting import format_comment_text, format_reply_text
 
 logger = logging.getLogger(__name__)
 
 
 class VkAuthorService:
-    def __init__(self, registry: AuthorsRegistry, repo: Repository):
+    def __init__(self, registry: AuthorsRegistry, repo: VkRepository):
         self.registry = registry
         self.repo = repo
 
@@ -87,7 +87,7 @@ class VkAuthorService:
 
 
 class VkMessageService:
-    def __init__(self, author_service: VkAuthorService, repo: Repository):
+    def __init__(self, author_service: VkAuthorService, repo: VkRepository):
         self.author_service = author_service
         self.repo = repo
 
@@ -122,7 +122,7 @@ class VkFeedService:
         api: VkApiService,
         author_service: VkAuthorService,
         message_service: VkMessageService,
-        repo: Repository,
+        repo: VkRepository,
     ):
         self.api = api
         self.author_service = author_service

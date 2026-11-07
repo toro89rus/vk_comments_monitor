@@ -5,9 +5,9 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError
 
 from tatd_bot.config import AppConfig
-from tatd_bot.repository import Repository
 from tatd_bot.tg.formatters import TgMessageFormatter
 from tatd_bot.tg.models import BotUserStatus
+from tatd_bot.tg.repository import TgRepository
 from tatd_bot.vk.models import Post
 from tatd_bot.vk.services import VkFeedService
 
@@ -18,7 +18,7 @@ class VkCommentsMonitorService:
     def __init__(
         self,
         config: AppConfig,
-        repo: Repository,
+        repo: TgRepository,
         bot: Bot,
         formatter: TgMessageFormatter,
         feed_service: VkFeedService,

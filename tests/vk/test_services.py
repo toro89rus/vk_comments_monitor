@@ -13,13 +13,13 @@ def registry():
 
 
 @pytest.fixture
-def author_service(registry, repo):
-    return VkAuthorService(registry, repo)
+def author_service(registry, vk_repo):
+    return VkAuthorService(registry, vk_repo)
 
 
 @pytest.fixture
-def message_service(author_service, repo):
-    return VkMessageService(author_service, repo)
+def message_service(author_service, vk_repo):
+    return VkMessageService(author_service, vk_repo)
 
 
 class TestGetOrCreateAuthor:
@@ -46,8 +46,8 @@ class TestGetOrCreateAuthor:
 
         assert author_service.get_or_create_author(1) is first
 
-    def test_user_is_loaded_from_redis(self, author_service, repo):
-        repo.save_user(1, "Иван", "Петров", Gender.MALE)
+    def test_user_is_loaded_from_redis(self, author_service, vk_repo):
+        vk_repo.save_user(1, "Иван", "Петров", Gender.MALE)
 
         user = author_service.get_or_create_author(1)
 
@@ -56,75 +56,75 @@ class TestGetOrCreateAuthor:
 
     @pytest.mark.parametrize("stored_gender", ["", "unknown"])
     def test_unknown_gender_from_redis_becomes_none(
-        self, author_service, repo, stored_gender
+        self, author_service, vk_repo, stored_gender
     ):
-        repo.save_user(1, "Иван", "Петров", stored_gender)
+        vk_repo.save_user(1, "Иван", "Петров", stored_gender)
 
         assert author_service.get_or_create_author(1).gender is None
 
-    def test_group_is_loaded_from_redis(self, author_service, repo):
-        repo.save_group_name(5, "Театр")
+    def test_group_is_loaded_from_redis(self, author_service, vk_repo):
+        vk_repo.save_group_name(5, "Театр")
 
         assert author_service.get_or_create_author(-5) == Group(5, "Театр")
 
-    def test_registry_wins_over_redis(self, author_service, repo):
+    def test_registry_wins_over_redis(self, author_service, vk_repo):
         # текущее поведение: имя из registry не обновляется до перезапуска
         author_service.get_or_create_author(1)
-        repo.save_user(1, "Иван", "Петров", Gender.MALE)
+        vk_repo.save_user(1, "Иван", "Петров", Gender.MALE)
 
         assert author_service.get_or_create_author(1).name is None
 
 
 class TestUpdateAuthorsFromVk:
     def test_updates_registered_user_and_saves_to_redis(
-        self, author_service, repo
+        self, author_service, vk_repo
     ):
         user = author_service.get_or_create_author(1)
 
         author_service.update_users_from_vk([vk_user(1, "Иван", "Петров", 2)])
 
         assert user == User(1, "Иван", "Петров", Gender.MALE)
-        assert repo.get_user(1) == {
+        assert vk_repo.get_user(1) == {
             "first_name": "Иван",
             "last_name": "Петров",
             "gender": "male",
         }
 
     def test_user_without_gender_is_saved_with_empty_gender(
-        self, author_service, repo
+        self, author_service, vk_repo
     ):
         author_service.get_or_create_author(1)
 
         author_service.update_users_from_vk([vk_user(1, "Иван", "Петров", 0)])
 
-        assert repo.get_user(1)["gender"] == ""
+        assert vk_repo.get_user(1)["gender"] == ""
 
-    def test_unregistered_user_is_ignored(self, author_service, repo):
+    def test_unregistered_user_is_ignored(self, author_service, vk_repo):
         author_service.update_users_from_vk([vk_user(1, "Иван", "Петров", 2)])
 
-        assert repo.get_user(1) == {}
+        assert vk_repo.get_user(1) == {}
 
     def test_updates_registered_group_and_saves_to_redis(
-        self, author_service, repo
+        self, author_service, vk_repo
     ):
         group = author_service.get_or_create_author(-5)
 
         author_service.update_groups_from_vk([vk_group(5, "Театр")])
 
         assert group.name == "Театр"
-        assert repo.get_group_name(5) == "Театр"
+        assert vk_repo.get_group_name(5) == "Театр"
 
-    def test_group_without_name_is_not_saved(self, author_service, repo):
+    def test_group_without_name_is_not_saved(self, author_service, vk_repo):
         author_service.get_or_create_author(-5)
 
         author_service.update_groups_from_vk([vk_group(5, "")])
 
-        assert repo.get_group_name(5) is None
+        assert vk_repo.get_group_name(5) is None
 
-    def test_unregistered_group_is_ignored(self, author_service, repo):
+    def test_unregistered_group_is_ignored(self, author_service, vk_repo):
         author_service.update_groups_from_vk([vk_group(5, "Театр")])
 
-        assert repo.get_group_name(5) is None
+        assert vk_repo.get_group_name(5) is None
 
 
 class TestMakeComment:
@@ -138,8 +138,8 @@ class TestMakeComment:
         assert comment.replies == []
         assert comment.is_new is True
 
-    def test_processed_comment_is_not_new(self, message_service, repo):
-        repo.process_comment(10)
+    def test_processed_comment_is_not_new(self, message_service, vk_repo):
+        vk_repo.process_comment(10)
 
         assert message_service.make_comment(vk_comment(10)).is_new is False
 
