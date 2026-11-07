@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 from redis import asyncio as redis
 
+from tatd_bot.vk.migrations import redis_migration_006_reset_latin_author_names
+
 logger = logging.getLogger(__name__)
 
 APPLIED_MIGRATIONS_KEY = "migrations:applied"
@@ -18,7 +20,12 @@ class Migration:
 
 
 # По порядку применения. Новая миграция — в конец, имена не менять
-MIGRATIONS: tuple[Migration, ...] = ()
+MIGRATIONS = (
+    Migration(
+        "006_reset_latin_author_names",
+        redis_migration_006_reset_latin_author_names.migrate,
+    ),
+)
 
 
 async def run_migrations(
