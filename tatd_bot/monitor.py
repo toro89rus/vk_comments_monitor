@@ -44,7 +44,7 @@ class VkCommentsMonitorService:
                         total_comments,
                     )
                     await self._notify_subscribers(new_vk_comments)
-                    self.feed_service.save_comments_cache(new_vk_comments)
+                    await self.feed_service.save_comments_cache(new_vk_comments)
                     logger.info("New comments sent")
                 else:
                     logger.info("No new comments found")
@@ -54,7 +54,7 @@ class VkCommentsMonitorService:
             await asyncio.sleep(self.config.vk.update_delay)
 
     async def _notify_subscribers(self, comments: list[Post]):
-        subscribers_ids = self.repo.get_subscribers()
+        subscribers_ids = await self.repo.get_subscribers()
         tasks = (
             self._send_to_subscriber(subscriber_id, comments)
             for subscriber_id in subscribers_ids
@@ -86,7 +86,7 @@ class VkCommentsMonitorService:
                 "User %s blocked the bot. Removing from subscribers.",
                 subscriber_id,
             )
-            self.repo.remove_subscriber(subscriber_id)
-            self.repo.set_bot_user_status(
+            await self.repo.remove_subscriber(subscriber_id)
+            await self.repo.set_bot_user_status(
                 subscriber_id, BotUserStatus.UNSUBSCRIBED.value
             )

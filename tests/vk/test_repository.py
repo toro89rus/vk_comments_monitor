@@ -11,24 +11,24 @@ def test_ttl_values():
 
 
 class TestVkUser:
-    def test_save_and_get_user(self, vk_repo, redis_client):
-        vk_repo.save_user(1, "Иван", "Петров", Gender.MALE)
+    async def test_save_and_get_user(self, vk_repo, redis_client):
+        await vk_repo.save_user(1, "Иван", "Петров", Gender.MALE)
 
-        assert vk_repo.get_user(1) == {
+        assert await vk_repo.get_user(1) == {
             "first_name": "Иван",
             "last_name": "Петров",
             "gender": "male",
         }
-        assert redis_client.ttl("user:1") == USER_TTL
+        assert await redis_client.ttl("user:1") == USER_TTL
 
-    def test_get_missing_user_returns_empty_dict(self, vk_repo):
-        assert vk_repo.get_user(1) == {}
+    async def test_get_missing_user_returns_empty_dict(self, vk_repo):
+        assert await vk_repo.get_user(1) == {}
 
-    def test_save_user_overwrites_fields(self, vk_repo):
-        vk_repo.save_user(1, "Иван", "Петров", "male")
-        vk_repo.save_user(1, "Пётр", "", "")
+    async def test_save_user_overwrites_fields(self, vk_repo):
+        await vk_repo.save_user(1, "Иван", "Петров", "male")
+        await vk_repo.save_user(1, "Пётр", "", "")
 
-        assert vk_repo.get_user(1) == {
+        assert await vk_repo.get_user(1) == {
             "first_name": "Пётр",
             "last_name": "",
             "gender": "",
@@ -36,54 +36,56 @@ class TestVkUser:
 
 
 class TestVkGroup:
-    def test_save_and_get_group_name(self, vk_repo, redis_client):
-        vk_repo.save_group_name(5, "Театр")
+    async def test_save_and_get_group_name(self, vk_repo, redis_client):
+        await vk_repo.save_group_name(5, "Театр")
 
-        assert vk_repo.get_group_name(5) == "Театр"
-        assert redis_client.hgetall("group:5:name") == {"name": "Театр"}
-        assert redis_client.ttl("group:5:name") == USER_TTL
+        assert await vk_repo.get_group_name(5) == "Театр"
+        assert await redis_client.hgetall("group:5:name") == {"name": "Театр"}
+        assert await redis_client.ttl("group:5:name") == USER_TTL
 
-    def test_get_missing_group_name(self, vk_repo):
-        assert vk_repo.get_group_name(5) is None
+    async def test_get_missing_group_name(self, vk_repo):
+        assert await vk_repo.get_group_name(5) is None
 
 
 class TestComment:
-    def test_new_comment_is_not_processed(self, vk_repo):
-        assert vk_repo.is_comment_processed(1) is False
+    async def test_new_comment_is_not_processed(self, vk_repo):
+        assert await vk_repo.is_comment_processed(1) is False
 
-    def test_process_comment(self, vk_repo, redis_client):
-        vk_repo.process_comment(1)
+    async def test_process_comment(self, vk_repo, redis_client):
+        await vk_repo.process_comment(1)
 
-        assert vk_repo.is_comment_processed(1) is True
-        assert redis_client.hgetall("comment:1") == {"is_processed": "1"}
-        assert redis_client.ttl("comment:1") == COMMENT_TTL
+        assert await vk_repo.is_comment_processed(1) is True
+        assert await redis_client.hgetall("comment:1") == {"is_processed": "1"}
+        assert await redis_client.ttl("comment:1") == COMMENT_TTL
 
-    def test_last_reply_id(self, vk_repo, redis_client):
-        assert vk_repo.get_last_reply_id(1) is None
+    async def test_last_reply_id(self, vk_repo, redis_client):
+        assert await vk_repo.get_last_reply_id(1) is None
 
-        vk_repo.save_last_reply_id(1, 77)
+        await vk_repo.save_last_reply_id(1, 77)
 
-        assert vk_repo.get_last_reply_id(1) == 77
-        assert redis_client.ttl("comment:1") == COMMENT_TTL
+        assert await vk_repo.get_last_reply_id(1) == 77
+        assert await redis_client.ttl("comment:1") == COMMENT_TTL
 
-    def test_last_reply_id_does_not_mark_comment_processed(self, vk_repo):
-        vk_repo.save_last_reply_id(1, 77)
+    async def test_last_reply_id_does_not_mark_comment_processed(self, vk_repo):
+        await vk_repo.save_last_reply_id(1, 77)
 
-        assert vk_repo.is_comment_processed(1) is False
+        assert await vk_repo.is_comment_processed(1) is False
 
-    def test_process_and_last_reply_share_one_hash(self, vk_repo, redis_client):
-        vk_repo.process_comment(1)
-        vk_repo.save_last_reply_id(1, 77)
+    async def test_process_and_last_reply_share_one_hash(
+        self, vk_repo, redis_client
+    ):
+        await vk_repo.process_comment(1)
+        await vk_repo.save_last_reply_id(1, 77)
 
-        assert redis_client.hgetall("comment:1") == {
+        assert await redis_client.hgetall("comment:1") == {
             "is_processed": "1",
             "last_reply_id": "77",
         }
 
-    def test_saving_reply_refreshes_ttl(self, vk_repo, redis_client):
-        vk_repo.process_comment(1)
-        redis_client.expire("comment:1", 10)
+    async def test_saving_reply_refreshes_ttl(self, vk_repo, redis_client):
+        await vk_repo.process_comment(1)
+        await redis_client.expire("comment:1", 10)
 
-        vk_repo.save_last_reply_id(1, 77)
+        await vk_repo.save_last_reply_id(1, 77)
 
-        assert redis_client.ttl("comment:1") == COMMENT_TTL
+        assert await redis_client.ttl("comment:1") == COMMENT_TTL

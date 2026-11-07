@@ -19,19 +19,19 @@ class VkAuthorService:
         self.registry = registry
         self.repo = repo
 
-    def get_or_create_author(self, id: int) -> User | Group:
+    async def get_or_create_author(self, id: int) -> User | Group:
         if id < 0:
             gid = abs(id)
-            return self._get_or_create_group(gid)
+            return await self._get_or_create_group(gid)
 
-        return self._get_or_create_user(id)
+        return await self._get_or_create_user(id)
 
-    def _get_or_create_group(self, gid: int) -> Group:
+    async def _get_or_create_group(self, gid: int) -> Group:
         cached_local_group = self.registry.get_existing_group(gid)
         if cached_local_group:
             return cached_local_group
 
-        cached_external_group_name = self.repo.get_group_name(gid)
+        cached_external_group_name = await self.repo.get_group_name(gid)
         if cached_external_group_name:
             group = Group(gid, cached_external_group_name)
             self.registry.register_group(group)
@@ -41,12 +41,12 @@ class VkAuthorService:
         self.registry.register_group(group)
         return group
 
-    def _get_or_create_user(self, uid: int) -> User:
+    async def _get_or_create_user(self, uid: int) -> User:
         cached_local_user = self.registry.get_existing_user(uid)
         if cached_local_user:
             return cached_local_user
 
-        cached_external_user = self.repo.get_user(uid)
+        cached_external_user = await self.repo.get_user(uid)
         if cached_external_user:
             first_name = cached_external_user.get("first_name")
             last_name = cached_external_user.get("last_name")
@@ -64,26 +64,26 @@ class VkAuthorService:
         self.registry.register_user(user)
         return user
 
-    def update_users_from_vk(self, vk_users: list[dict]) -> None:
+    async def update_users_from_vk(self, vk_users: list[dict]) -> None:
         for vk_user in vk_users:
             user = self.registry.get_existing_user(vk_user["id"])
             if user:
                 base_data = vk_to_vk_user_base_data(vk_user)
                 user.update(base_data)
-                self.repo.save_user(
+                await self.repo.save_user(
                     user.id,
                     user.first_name or "",
                     user.last_name or "",
                     user.gender or "",
                 )
 
-    def update_groups_from_vk(self, vk_groups: list[dict]) -> None:
+    async def update_groups_from_vk(self, vk_groups: list[dict]) -> None:
         for vk_group in vk_groups:
             group = self.registry.get_existing_group(vk_group["id"])
             if group:
                 group.update(vk_group)
                 if group.name:
-                    self.repo.save_group_name(group.id, group.name)
+                    await self.repo.save_group_name(group.id, group.name)
 
 
 class VkMessageService:
@@ -91,29 +91,31 @@ class VkMessageService:
         self.author_service = author_service
         self.repo = repo
 
-    def make_comment(self, vk_comment: dict) -> Comment:
+    async def make_comment(self, vk_comment: dict) -> Comment:
         return Comment(
             id=vk_comment["id"],
             created_at=get_msk_time(vk_comment["date"]),
-            author=self._get_author(vk_comment),
+            author=await self._get_author(vk_comment),
             text=format_comment_text(vk_comment.get("text", "")),
             replies=[],
-            is_new=not self.repo.is_comment_processed(vk_comment["id"]),
+            is_new=not await self.repo.is_comment_processed(vk_comment["id"]),
         )
 
-    def make_reply(self, vk_comment: dict) -> Reply:
+    async def make_reply(self, vk_comment: dict) -> Reply:
         return Reply(
             id=vk_comment["id"],
             created_at=get_msk_time(vk_comment["date"]),
-            author=self._get_author(vk_comment),
+            author=await self._get_author(vk_comment),
             text=format_reply_text(vk_comment.get("text", "")),
-            reply_to=self.author_service.get_or_create_author(
+            reply_to=await self.author_service.get_or_create_author(
                 vk_comment.get("reply_to_user", 0)
             ),
         )
 
-    def _get_author(self, vk_comment: dict) -> User | Group:
-        return self.author_service.get_or_create_author(vk_comment["from_id"])
+    async def _get_author(self, vk_comment: dict) -> User | Group:
+        return await self.author_service.get_or_create_author(
+            vk_comment["from_id"]
+        )
 
 
 class VkFeedService:
@@ -160,7 +162,7 @@ class VkFeedService:
         post_comments = await self.api.get_comments(vk_post["id"])
 
         for comment in post_comments:
-            formatted_comment = self._format_comment(comment)
+            formatted_comment = await self._format_comment(comment)
             if formatted_comment:
                 post_new_comments.append(formatted_comment)
 
@@ -168,21 +170,21 @@ class VkFeedService:
             return vk_to_post(vk_post, post_new_comments)
         return None
 
-    def _format_comment(self, vk_comment: dict) -> Comment | None:
-        formatted_comment = self.message_service.make_comment(vk_comment)
+    async def _format_comment(self, vk_comment: dict) -> Comment | None:
+        formatted_comment = await self.message_service.make_comment(vk_comment)
         if vk_comment.get("thread", {}).get("count", 0) > 0:
-            formatted_comment.replies = self._get_new_replies(vk_comment)
+            formatted_comment.replies = await self._get_new_replies(vk_comment)
         if formatted_comment.has_new_activity():
             return formatted_comment
         return None
 
-    def _get_new_replies(self, vk_comment: dict) -> list[Reply]:
-        last_reply_id = self.repo.get_last_reply_id(vk_comment["id"]) or 0
+    async def _get_new_replies(self, vk_comment: dict) -> list[Reply]:
+        last_reply_id = await self.repo.get_last_reply_id(vk_comment["id"]) or 0
         new_replies = []
         vk_replies = vk_comment.get("thread", {}).get("items", [])
         for reply in vk_replies:
             if reply["id"] > last_reply_id:
-                serialized_reply = self.message_service.make_reply(reply)
+                serialized_reply = await self.message_service.make_reply(reply)
                 if serialized_reply.text:
                     new_replies.append(serialized_reply)
         return new_replies
@@ -219,18 +221,20 @@ class VkFeedService:
         if users_to_fetch:
             vk_users = await self.api.get_users_names(users_to_fetch)
             if vk_users:
-                self.author_service.update_users_from_vk(vk_users)
+                await self.author_service.update_users_from_vk(vk_users)
 
         if groups_to_fetch:
             vk_groups = await self.api.get_groups_names(groups_to_fetch)
             if vk_groups:
-                self.author_service.update_groups_from_vk(vk_groups)
+                await self.author_service.update_groups_from_vk(vk_groups)
 
-    def save_comments_cache(self, posts: list[Post]) -> None:
+    async def save_comments_cache(self, posts: list[Post]) -> None:
         for post in posts:
             for comment in post.comments:
                 if comment.is_new:
-                    self.repo.process_comment(comment.id)
+                    await self.repo.process_comment(comment.id)
                 if comment.replies:
                     last_reply_id = comment.replies[-1].id
-                    self.repo.save_last_reply_id(comment.id, last_reply_id)
+                    await self.repo.save_last_reply_id(
+                        comment.id, last_reply_id
+                    )

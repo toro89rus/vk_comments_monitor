@@ -65,6 +65,7 @@ async def run_bot():
         await dp.start_polling(tatd_bot)
     finally:
         await vk_api_service.close()
+        await redis_client.aclose()
 
 
 if __name__ == "__main__":

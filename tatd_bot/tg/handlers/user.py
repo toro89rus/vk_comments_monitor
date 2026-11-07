@@ -25,10 +25,10 @@ async def process_start(
     message: Message, bot_user_service: BotUserService, config: AppConfig
 ):
     user = message.from_user
-    bot_user = bot_user_service.get_user(user.id)
+    bot_user = await bot_user_service.get_user(user.id)
     if not bot_user:
         bot_user = map_tg_to_bot_user(user)
-        bot_user_service.save_user_info(bot_user)
+        await bot_user_service.save_user_info(bot_user)
 
     logger.info("%s sent start command", bot_user.full_name)
     keyboard = (
@@ -49,10 +49,10 @@ async def process_subscribe_button(
 ):
     tg_user = message.from_user
     logger.info("%s pushed subscribe button", tg_user.full_name)
-    user = bot_user_service.get_user(tg_user.id)
+    user = await bot_user_service.get_user(tg_user.id)
     if not user:
         user = map_tg_to_bot_user(tg_user)
-        bot_user_service.save_user_info(user)
+        await bot_user_service.save_user_info(user)
 
     result = await subscription_service.request_subscription(user)
     if result == CreateSubRequestResult.ALREADY_SUBBED:

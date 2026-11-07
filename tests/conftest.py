@@ -30,8 +30,8 @@ def app_config() -> AppConfig:
 
 
 @pytest.fixture
-def redis_client() -> fakeredis.FakeRedis:
-    return fakeredis.FakeRedis(decode_responses=True)
+def redis_client() -> fakeredis.FakeAsyncRedis:
+    return fakeredis.FakeAsyncRedis(decode_responses=True)
 
 
 @pytest.fixture

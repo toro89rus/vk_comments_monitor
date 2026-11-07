@@ -79,22 +79,24 @@ class TestStart:
 
         await process_start(message, bot_user_service, app_config)
 
-        assert tg_repo.get_bot_user(USER_ID).status is BotUserStatus.NEW
+        assert (await tg_repo.get_bot_user(USER_ID)).status is BotUserStatus.NEW
         assert message.answers[0].text == LEXICON.Message.WELCOME
         assert message.answers[0].reply_markup is KEYBOARDS.USER_SUBSCRIBE
 
     async def test_known_user_is_not_overwritten(
         self, bot_user_service, app_config, tg_repo
     ):
-        tg_repo.add_subscriber(USER_ID)
+        await tg_repo.add_subscriber(USER_ID)
         await process_start(message_from(USER_ID), bot_user_service, app_config)
-        tg_repo.set_bot_user_status(USER_ID, BotUserStatus.SUBSCRIBED.value)
+        await tg_repo.set_bot_user_status(
+            USER_ID, BotUserStatus.SUBSCRIBED.value
+        )
 
         await process_start(
             message_from(USER_ID, "Пётр"), bot_user_service, app_config
         )
 
-        user = tg_repo.get_bot_user(USER_ID)
+        user = await tg_repo.get_bot_user(USER_ID)
         assert user.status is BotUserStatus.SUBSCRIBED
         assert user.full_name == "Иван Петров"
 
@@ -114,7 +116,7 @@ class TestSubscribeButton:
             USER_ID, bot, subscription_service, app_config, bot_user_service
         )
 
-        assert tg_repo.is_pending_subscriber(USER_ID) is True
+        assert await tg_repo.is_pending_subscriber(USER_ID) is True
         assert bot.texts_for(ADMIN_ID) == ["Заявка от Иван1 Петров"]
         assert bot.texts_for(USER_ID) == [LEXICON.Message.SUB_APPLICATION_SENT]
 
@@ -136,7 +138,7 @@ class TestSubscribeButton:
     async def test_already_subscribed(
         self, bot, subscription_service, app_config, bot_user_service, tg_repo
     ):
-        tg_repo.add_subscriber(USER_ID)
+        await tg_repo.add_subscriber(USER_ID)
 
         await subscribe(
             USER_ID, bot, subscription_service, app_config, bot_user_service
@@ -150,14 +152,14 @@ class TestUnsubscribeButton:
     async def test_unsubscribe(
         self, bot, subscription_service, app_config, tg_repo
     ):
-        tg_repo.add_subscriber(USER_ID)
+        await tg_repo.add_subscriber(USER_ID)
 
         await process_unsubscribe_button(
             message_from(USER_ID), subscription_service, bot, app_config
         )
 
-        assert tg_repo.is_subscriber(USER_ID) is False
-        assert tg_repo.get_bot_user(USER_ID).status is (
+        assert await tg_repo.is_subscriber(USER_ID) is False
+        assert (await tg_repo.get_bot_user(USER_ID)).status is (
             BotUserStatus.UNSUBSCRIBED
         )
         assert bot.texts_for(USER_ID) == [LEXICON.Message.UNSUBBED]
@@ -243,7 +245,7 @@ class TestReviewApplications:
             accept_message, subscription_service, admin_state, bot
         )
 
-        assert tg_repo.is_subscriber(1) is True
+        assert await tg_repo.is_subscriber(1) is True
         assert bot.texts_for(1)[-1] == LEXICON.Message.SUB_APPLICATION_ACCEPTED
         assert accept_message.answers[0].text == "Заявка от Иван2 Петров"
         assert await admin_state.get_value("application_user_id") == 2
@@ -253,7 +255,7 @@ class TestReviewApplications:
             decline_message, subscription_service, admin_state, bot
         )
 
-        assert tg_repo.get_bot_user(2).status is BotUserStatus.REJECTED
+        assert (await tg_repo.get_bot_user(2)).status is BotUserStatus.REJECTED
         assert bot.texts_for(2)[-1] == LEXICON.Message.SUB_APPLICATION_DECLINED
         assert decline_message.answers[0].text == (
             LEXICON.Message.NO_PENDING_APPLICATIONS
