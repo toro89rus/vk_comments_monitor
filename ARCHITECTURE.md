@@ -91,7 +91,8 @@ BotUserService(tg_repo)
    1. `api.get_posts()` — 20 последних постов (`wall.get`). Остаются посты не старше 7 дней
       с `comments.count > 0`.
    2. Для каждого поста — `api.get_comments(post_id)`: до 100 комментариев верхнего уровня, в каждом
-      до 10 ответов из ветки (`thread_items_count=10`).
+      до 10 ответов из ветки (`thread_items_count=10`). Остальное не запрашивается: известное
+      упрощение, см. [refactoring.md](docs/refactoring.md).
    3. Каждый комментарий → `Comment` через `VkMessageService`:
       - `is_new` — в Redis нет отметки `is_processed`;
       - текст прогоняется через `format_comment_text`: пустой, «спасибо» и поздравления с днём рождения

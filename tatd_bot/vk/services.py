@@ -107,9 +107,19 @@ class VkMessageService:
             created_at=get_msk_time(vk_comment["date"]),
             author=await self._get_author(vk_comment),
             text=format_reply_text(vk_comment.get("text", "")),
-            reply_to=await self.author_service.get_or_create_author(
-                vk_comment.get("reply_to_user", 0)
-            ),
+            reply_to=await self._get_reply_to(vk_comment),
+        )
+
+    async def _get_reply_to(self, vk_comment: dict) -> User | Group:
+        if "reply_to_user" not in vk_comment:
+            # Q3: по структуре VK так быть не должно, лог — чтобы проверить
+            logger.warning(
+                "VK reply %s on post %s has no reply_to_user",
+                vk_comment["id"],
+                vk_comment.get("post_id"),
+            )
+        return await self.author_service.get_or_create_author(
+            vk_comment.get("reply_to_user", 0)
         )
 
     async def _get_author(self, vk_comment: dict) -> User | Group:
