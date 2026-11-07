@@ -3,8 +3,6 @@ from dataclasses import dataclass
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 DATE_FORMAT = "%d.%m.%Y"
 DATETIME_FORMAT = "%d.%m.%Y %H:%M"
 LOG_FORMAT = "[{asctime}] #{levelname:8} - {name} - {message}"
@@ -33,6 +31,7 @@ class TgConfig:
 @dataclass(frozen=True)
 class RedisConfig:
     host: str
+    port: int = 6379
 
 
 @dataclass(frozen=True)
@@ -59,7 +58,10 @@ def load_config() -> AppConfig:
         token=os.getenv("TG_TOKEN", ""),
         admin_id=int(os.getenv("ADMIN_ID", "0")),
     )
-    redis = RedisConfig(host=os.getenv("REDIS", "localhost"))
+    redis = RedisConfig(
+        host=os.getenv("REDIS", "localhost"),
+        port=int(os.getenv("REDIS_PORT", "6379")),
+    )
     return AppConfig(
         vk=vk,
         tg=tg,

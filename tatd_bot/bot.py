@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher
 
 from tatd_bot.config import load_config
 from tatd_bot.logger import setup_logger
-from tatd_bot.repository import Repository
+from tatd_bot.repository import Repository, create_redis_client
 from tatd_bot.tg.formatters import TgMessageFormatter
 from tatd_bot.tg.handlers.admin import admin_router
 from tatd_bot.tg.handlers.user import user_router
@@ -27,7 +27,7 @@ async def run_bot():
     logger = setup_logger(config.log_format, config.env)
     logger.info("Bot started")
 
-    repo = Repository(config.redis.host)
+    repo = Repository(create_redis_client(config.redis))
     tatd_bot = Bot(token=config.tg.token)
     dp = Dispatcher()
 

@@ -35,8 +35,4 @@ def redis_client() -> fakeredis.FakeRedis:
 
 @pytest.fixture
 def repo(redis_client) -> Repository:
-    # Repository сам создаёт клиент; redis.Redis не подключается до первой
-    # команды, поэтому клиент можно подменить сразу после создания
-    repository = Repository("localhost")
-    repository.r = redis_client
-    return repository
+    return Repository(redis_client)

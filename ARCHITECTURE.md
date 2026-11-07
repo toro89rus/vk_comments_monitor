@@ -24,7 +24,7 @@ Telegram-бот для сотрудников театра (группа VK `tul
 ```
 tatd_bot/
   bot.py              точка входа: собирает зависимости, запускает мониторинг и polling
-  config/config.py    AppConfig из переменных окружения (.env через dotenv)
+  config/config.py    AppConfig из переменных окружения; load_config() подгружает .env
   logger.py           настройка корневого логгера
   repository.py       Repository — весь доступ к Redis (и для tg, и для vk)
   utils/time_utils.py unix-время → datetime в Europe/Moscow
@@ -57,7 +57,7 @@ tatd_bot/
 Внедрения зависимостей через фреймворк нет. Всё собирается вручную в `bot.py: run_bot()`:
 
 ```
-Repository(redis_host)
+Repository(create_redis_client(config.redis))
 VkApiService(config)
 AuthorsRegistry()
 VkAuthorService(registry, repo)
@@ -144,8 +144,8 @@ TTL комментариев (8 дней) больше окна монитори
 ## Конфигурация
 
 Переменные окружения (`.env`): `TG_TOKEN`, `ADMIN_ID`, `VK_TOKEN`, `VK_GROUP_ID` (по умолчанию
-`-48164678`), `VK_GROUP_NAME`, `VK_MONITOR_UPDATE_DELAY`, `REDIS` (хост), `ENV` (`DEV` — уровень логов DEBUG).
-Порт Redis 6379 зашит в `Repository`. Форматы дат — константы в `config.py`.
+`-48164678`), `VK_GROUP_NAME`, `VK_MONITOR_UPDATE_DELAY`, `REDIS` (хост), `REDIS_PORT` (по умолчанию
+6379), `ENV` (`DEV` — уровень логов DEBUG). Форматы дат — константы в `config.py`.
 
 ## Запуск и деплой
 
