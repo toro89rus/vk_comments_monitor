@@ -31,6 +31,7 @@ class TgConfig:
 @dataclass(frozen=True)
 class RedisConfig:
     host: str
+    port: int = 6379
 
 
 @dataclass(frozen=True)
@@ -57,7 +58,10 @@ def load_config() -> AppConfig:
         token=os.getenv("TG_TOKEN", ""),
         admin_id=int(os.getenv("ADMIN_ID", "0")),
     )
-    redis = RedisConfig(host=os.getenv("REDIS", "localhost"))
+    redis = RedisConfig(
+        host=os.getenv("REDIS", "localhost"),
+        port=int(os.getenv("REDIS_PORT", "6379")),
+    )
     return AppConfig(
         vk=vk,
         tg=tg,

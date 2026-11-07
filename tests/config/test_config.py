@@ -18,6 +18,7 @@ ENV_VARS = (
     "VK_GROUP_NAME",
     "VK_MONITOR_UPDATE_DELAY",
     "REDIS",
+    "REDIS_PORT",
     "ENV",
 )
 
@@ -40,6 +41,7 @@ def test_defaults(env):
     assert config.tg.token == ""
     assert config.tg.admin_id == 0
     assert config.redis.host == "localhost"
+    assert config.redis.port == 6379
     assert config.env == "PROD"
     assert config.date_format == DATE_FORMAT
     assert config.datetime_format == DATETIME_FORMAT
@@ -55,6 +57,7 @@ def test_values_from_environment(env):
     monkeypatch.setenv("VK_GROUP_NAME", "group")
     monkeypatch.setenv("VK_MONITOR_UPDATE_DELAY", "60")
     monkeypatch.setenv("REDIS", "redis")
+    monkeypatch.setenv("REDIS_PORT", "6380")
     monkeypatch.setenv("ENV", "DEV")
 
     config = load_config()
@@ -66,6 +69,7 @@ def test_values_from_environment(env):
     assert config.vk.group_name == "group"
     assert config.vk.update_delay == 60
     assert config.redis.host == "redis"
+    assert config.redis.port == 6380
     assert config.env == "DEV"
 
 
@@ -79,7 +83,9 @@ def test_dotenv_is_loaded_before_reading_environment(env):
     assert config.tg.admin_id == 7
 
 
-@pytest.mark.parametrize("name", ["ADMIN_ID", "VK_MONITOR_UPDATE_DELAY"])
+@pytest.mark.parametrize(
+    "name", ["ADMIN_ID", "VK_MONITOR_UPDATE_DELAY", "REDIS_PORT"]
+)
 def test_non_integer_value_raises(env, name):
     monkeypatch, _ = env
     monkeypatch.setenv(name, "abc")

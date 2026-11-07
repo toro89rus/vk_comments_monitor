@@ -144,8 +144,8 @@ TTL комментариев (8 дней) больше окна монитори
 ## Конфигурация
 
 Переменные окружения (`.env`): `TG_TOKEN`, `ADMIN_ID`, `VK_TOKEN`, `VK_GROUP_ID` (по умолчанию
-`-48164678`), `VK_GROUP_NAME`, `VK_MONITOR_UPDATE_DELAY`, `REDIS` (хост), `ENV` (`DEV` — уровень логов DEBUG).
-Порт Redis 6379 зашит в `Repository`. Форматы дат — константы в `config.py`.
+`-48164678`), `VK_GROUP_NAME`, `VK_MONITOR_UPDATE_DELAY`, `REDIS` (хост), `REDIS_PORT` (по умолчанию
+6379), `ENV` (`DEV` — уровень логов DEBUG). Форматы дат — константы в `config.py`.
 
 ## Запуск и деплой
 

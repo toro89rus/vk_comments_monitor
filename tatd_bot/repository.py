@@ -20,11 +20,10 @@ USER_TTL = 2592000
 COMMENT_TTL = 8 * 24 * 60 * 60
 
 
-REDIS_PORT = 6379
-
-
 def create_redis_client(config: RedisConfig) -> redis.Redis:
-    return redis.Redis(host=config.host, port=REDIS_PORT, decode_responses=True)
+    return redis.Redis(
+        host=config.host, port=config.port, decode_responses=True
+    )
 
 
 class Repository:
