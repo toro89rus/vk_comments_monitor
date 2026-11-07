@@ -71,8 +71,9 @@ TgSubscriptionService(config, repo)
 BotUserService(repo)
 ```
 
-В хендлеры через `dp[...]` передаются `config`, `repo`, `subsciption_service` (опечатка в ключе — он же
-имя аргумента во всех хендлерах) и `bot_user_service`. Мониторинг запускается `asyncio.create_task`
+В хендлеры через `dp[...]` передаются `config`, `repo`, `subscription_service` и
+`bot_user_service`. Ключ в `dp` совпадает с именем аргумента хендлера, по нему aiogram и подставляет
+зависимость. Мониторинг запускается `asyncio.create_task`
 в том же event loop, что и polling.
 
 ## Поток: мониторинг комментариев
