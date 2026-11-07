@@ -46,7 +46,7 @@ tatd_bot/
     lexicon.py        тексты кнопок и сообщений
     keyboards.py      reply-клавиатуры
     filters.py        IsAdmin
-    states/           AdminStates (FSM)
+    states.py         AdminStates (FSM)
 ```
 
 Вне git (в `.gitignore`) лежит `ya_maps_monitor` — мониторинг отзывов на Яндекс Картах. Эта часть заморожена,

@@ -10,7 +10,7 @@ import tatd_bot.tg.keyboards as KEYBOARDS
 from tatd_bot.tg import lexicon as LEXICON
 from tatd_bot.tg.filters import IsAdmin
 from tatd_bot.tg.services import TgSubscriptionService
-from tatd_bot.tg.states.states import AdminStates
+from tatd_bot.tg.states import AdminStates
 
 logger = logging.getLogger(__name__)
 

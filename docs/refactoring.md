@@ -16,8 +16,6 @@
 
 Только переносы и разбиение, логика не меняется. Тесты меняют лишь импорты.
 
-8. **Убрать лишнюю вложенность в `tatd_bot/tg/`:** `services/services.py` → `services.py`, так же для
-   `models`, `mappers`, `keyboards`, `filters`, `states`. По одному пакету на коммит (`move …`).
 9. **Мониторинг — на уровень приложения:** `VkCommentsMonitorService` из `tg/services` в
    `tatd_bot/monitor.py`. Это оркестрация vk → tg, а не часть Telegram-слоя.
 10. **Разделить `VkMessageService._make_message_entity`** на две функции, для комментария и для ответа.
