@@ -45,7 +45,7 @@ tatd_bot/
     mappers.py        aiogram User / Redis-хэш ↔ BotUser
     lexicon.py        тексты кнопок и сообщений
     keyboards.py      reply-клавиатуры
-    filters/          IsAdmin
+    filters.py        IsAdmin
     states/           AdminStates (FSM)
 ```
 

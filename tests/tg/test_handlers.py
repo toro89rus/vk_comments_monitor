@@ -6,7 +6,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 import tatd_bot.tg.keyboards as KEYBOARDS
 from tatd_bot.tg import lexicon as LEXICON
-from tatd_bot.tg.filters.filters import IsAdmin
+from tatd_bot.tg.filters import IsAdmin
 from tatd_bot.tg.handlers.admin import (
     accept_subscriber,
     decline_subscriber,

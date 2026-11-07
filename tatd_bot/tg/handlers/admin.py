@@ -8,7 +8,7 @@ from aiogram.types import Message
 
 import tatd_bot.tg.keyboards as KEYBOARDS
 from tatd_bot.tg import lexicon as LEXICON
-from tatd_bot.tg.filters.filters import IsAdmin
+from tatd_bot.tg.filters import IsAdmin
 from tatd_bot.tg.services import TgSubscriptionService
 from tatd_bot.tg.states.states import AdminStates
 
