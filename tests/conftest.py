@@ -1,0 +1,26 @@
+import pytest
+
+from tatd_bot.config.config import (
+    DATE_FORMAT,
+    DATETIME_FORMAT,
+    LOG_FORMAT,
+    AppConfig,
+    RedisConfig,
+    TgConfig,
+    VkConfig,
+)
+
+ADMIN_ID = 1000
+
+
+@pytest.fixture
+def app_config() -> AppConfig:
+    return AppConfig(
+        vk=VkConfig(token="vk-test-token"),
+        tg=TgConfig(token="tg-test-token", admin_id=ADMIN_ID),
+        redis=RedisConfig(host="localhost"),
+        env="TEST",
+        date_format=DATE_FORMAT,
+        datetime_format=DATETIME_FORMAT,
+        log_format=LOG_FORMAT,
+    )
