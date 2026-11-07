@@ -190,13 +190,21 @@ class TestMakeReply:
 
         assert reply.reply_to == Group(5)
 
-    async def test_reply_without_reply_to_user(self, message_service):
+    async def test_reply_without_reply_to_user(self, message_service, caplog):
         reply = await message_service.make_reply(
             vk_reply(11, reply_to_user=None)
         )
 
         # текущее поведение: адресат — User(0)
         assert reply.reply_to == User(0)
+        assert "VK reply 11 on post 1 has no reply_to_user" in caplog.text
+
+    async def test_reply_with_reply_to_user_is_not_logged(
+        self, message_service, caplog
+    ):
+        await message_service.make_reply(vk_reply(11, reply_to_user=1))
+
+        assert "reply_to_user" not in caplog.text
 
     async def test_authors_are_shared_between_messages(self, message_service):
         comment = await message_service.make_comment(vk_comment(10, from_id=1))

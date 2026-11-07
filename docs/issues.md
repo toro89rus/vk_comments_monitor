@@ -89,5 +89,9 @@
 Сейчас у такого ответа адресатом становится `User(0)`, и id 0 уходит в `users.get`. Если в настоящих ответах
 VK так бывает — это баг.
 
+Владелец считает, что по структуре VK так быть не может. Чтобы проверить, такой ответ пишется в лог
+предупреждением `VK reply … has no reply_to_user`. Если за пару недель в логах сервера его нет — вопрос
+закрыть.
+
 - Тесты: `tests/vk/test_services.py::TestMakeReply::test_reply_without_reply_to_user`,
   `tests/vk/test_services_feed.py::TestAuthorsNames::test_reply_without_reply_to_user_requests_user_zero`.
