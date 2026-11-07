@@ -92,36 +92,28 @@ class VkMessageService:
         self.repo = repo
 
     def make_comment(self, vk_comment: dict) -> Comment:
-        return self._make_message_entity(Comment, vk_comment)
+        return Comment(
+            id=vk_comment["id"],
+            created_at=get_msk_time(vk_comment["date"]),
+            author=self._get_author(vk_comment),
+            text=format_comment_text(vk_comment.get("text", "")),
+            replies=[],
+            is_new=not self.repo.is_comment_processed(vk_comment["id"]),
+        )
 
     def make_reply(self, vk_comment: dict) -> Reply:
-        return self._make_message_entity(Reply, vk_comment)
+        return Reply(
+            id=vk_comment["id"],
+            created_at=get_msk_time(vk_comment["date"]),
+            author=self._get_author(vk_comment),
+            text=format_reply_text(vk_comment.get("text", "")),
+            reply_to=self.author_service.get_or_create_author(
+                vk_comment.get("reply_to_user", 0)
+            ),
+        )
 
-    def _make_message_entity(
-        self, model_cls: type[Comment] | type[Reply], data: dict
-    ) -> Comment | Reply:
-        base = self._parse_base(data)
-
-        if model_cls is Comment:
-            base["replies"] = []
-            base["is_new"] = not self.repo.is_comment_processed(data["id"])
-            base["text"] = format_comment_text(data.get("text", ""))
-
-        if model_cls is Reply:
-            reply_to_user = data.get("reply_to_user", 0)
-            base["reply_to"] = self.author_service.get_or_create_author(
-                reply_to_user
-            )
-            base["text"] = format_reply_text(data.get("text", ""))
-
-        return model_cls(**base)
-
-    def _parse_base(self, data: dict) -> dict:
-        return {
-            "id": data["id"],
-            "created_at": get_msk_time(data["date"]),
-            "author": self.author_service.get_or_create_author(data["from_id"]),
-        }
+    def _get_author(self, vk_comment: dict) -> User | Group:
+        return self.author_service.get_or_create_author(vk_comment["from_id"])
 
 
 class VkFeedService:
