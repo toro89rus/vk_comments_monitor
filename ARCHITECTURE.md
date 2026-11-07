@@ -166,7 +166,8 @@ TTL комментариев (8 дней) больше окна монитори
   `make lint`, `make test`). Тесты — `tests/` (pytest, pytest-asyncio в режиме auto, fakeredis).
   Старые нарушения правил ruff помечены `# noqa`.
 - CI: `.github/workflows/check.yml` — `make check` на каждый PR в `main` и на каждый пуш в `main`
-  (job `check`). Деплой от CI пока не зависит: `deploy.sh` подтягивает `main`, не глядя на результат.
+  (job `check`). `main` защищён на GitHub (ruleset): мерж только через PR с зелёным `check`, без
+  force push и удаления. Сам `deploy.sh` результат CI не проверяет.
 - `make install` (= `uv sync`) ставит и dev-зависимости, в том числе в Docker-образ.
 
 ## Проблемы и планы
