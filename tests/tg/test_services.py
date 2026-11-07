@@ -312,9 +312,7 @@ class TestMonitor:
 
         assert bot.sent == []
 
-    async def test_cancellation_stops_monitor(
-        self, monitor_service
-    ):
+    async def test_cancellation_stops_monitor(self, monitor_service):
         with patch(
             "tatd_bot.tg.services.services.asyncio.sleep",
             side_effect=asyncio.CancelledError,
