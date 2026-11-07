@@ -1,3 +1,4 @@
+import fakeredis
 import pytest
 
 from tatd_bot.config.config import (
@@ -9,6 +10,7 @@ from tatd_bot.config.config import (
     TgConfig,
     VkConfig,
 )
+from tatd_bot.repository import Repository
 
 ADMIN_ID = 1000
 
@@ -24,3 +26,17 @@ def app_config() -> AppConfig:
         datetime_format=DATETIME_FORMAT,
         log_format=LOG_FORMAT,
     )
+
+
+@pytest.fixture
+def redis_client() -> fakeredis.FakeRedis:
+    return fakeredis.FakeRedis(decode_responses=True)
+
+
+@pytest.fixture
+def repo(redis_client) -> Repository:
+    # Repository сам создаёт клиент; redis.Redis не подключается до первой
+    # команды, поэтому клиент можно подменить сразу после создания
+    repository = Repository("localhost")
+    repository.r = redis_client
+    return repository
