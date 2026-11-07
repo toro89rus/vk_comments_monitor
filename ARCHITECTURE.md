@@ -163,7 +163,9 @@ TTL комментариев (8 дней) больше окна монитори
   Цели `start-ya_maps` / `cron-ya_maps` ссылаются на модуль, которого нет в git.
 - Проверки: `make check` — `ruff format --check`, `ruff check`, `pytest` (по отдельности: `make format`,
   `make lint`, `make test`). Тесты — `tests/` (pytest, pytest-asyncio в режиме auto, fakeredis).
-  Старые нарушения правил ruff помечены `# noqa`. CI нет.
+  Старые нарушения правил ruff помечены `# noqa`.
+- CI: `.github/workflows/check.yml` — `make check` на каждый PR в `main` и на каждый пуш в `main`
+  (job `check`). Деплой от CI пока не зависит: `deploy.sh` подтягивает `main`, не глядя на результат.
 - `make install` (= `uv sync`) ставит и dev-зависимости, в том числе в Docker-образ.
 
 ## Проблемы и планы
