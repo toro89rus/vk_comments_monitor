@@ -41,7 +41,7 @@ tatd_bot/
     services.py       VkCommentsMonitorService (цикл мониторинга и рассылка),
                       TgSubscriptionService, BotUserService
     formatters.py     TgMessageFormatter — модели VK → текст сообщений
-    models/models.py  BotUser, BotUserStatus
+    models.py         BotUser, BotUserStatus
     mappers/mappers.py aiogram User / Redis-хэш ↔ BotUser
     lexicon.py        тексты кнопок и сообщений
     keyboards/        reply-клавиатуры

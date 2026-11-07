@@ -17,7 +17,7 @@ from tatd_bot.tg.handlers.user import (
     process_subscribe_button,
     process_unsubscribe_button,
 )
-from tatd_bot.tg.models.models import BotUserStatus
+from tatd_bot.tg.models import BotUserStatus
 from tatd_bot.tg.services import (
     BotUserService,
     TgSubscriptionService,

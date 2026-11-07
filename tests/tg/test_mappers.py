@@ -6,7 +6,7 @@ from tatd_bot.tg.mappers.mappers import (
     map_redis_to_bot_user,
     map_tg_to_bot_user,
 )
-from tatd_bot.tg.models.models import BotUser, BotUserStatus
+from tatd_bot.tg.models import BotUser, BotUserStatus
 
 
 def test_map_tg_to_bot_user_defaults_to_new_status():

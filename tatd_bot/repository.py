@@ -7,7 +7,7 @@ from tatd_bot.tg.mappers.mappers import (
     map_bot_user_to_redis,
     map_redis_to_bot_user,
 )
-from tatd_bot.tg.models.models import BotUser
+from tatd_bot.tg.models import BotUser
 
 SUBSCRIBERS = "subscribers"
 PENDING_SUBSCRIBERS = "pending_subscribers"

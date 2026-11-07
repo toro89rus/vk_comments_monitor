@@ -7,7 +7,7 @@ from aiogram.exceptions import TelegramRetryAfter
 from aiogram.methods import SendMessage
 
 from tatd_bot.tg.formatters import TgMessageFormatter
-from tatd_bot.tg.models.models import BotUser, BotUserStatus
+from tatd_bot.tg.models import BotUser, BotUserStatus
 from tatd_bot.tg.services import (
     BotUserService,
     CreateSubRequestResult,

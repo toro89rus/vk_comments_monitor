@@ -1,6 +1,6 @@
 from aiogram.types import User
 
-from tatd_bot.tg.models.models import BotUser, BotUserStatus
+from tatd_bot.tg.models import BotUser, BotUserStatus
 
 
 def map_bot_user_to_redis(bot_user: BotUser):

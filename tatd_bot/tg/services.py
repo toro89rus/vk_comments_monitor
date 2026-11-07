@@ -8,7 +8,7 @@ from aiogram.exceptions import TelegramForbiddenError
 from tatd_bot.config import AppConfig
 from tatd_bot.repository import Repository
 from tatd_bot.tg.formatters import TgMessageFormatter
-from tatd_bot.tg.models.models import BotUser, BotUserStatus
+from tatd_bot.tg.models import BotUser, BotUserStatus
 from tatd_bot.vk.models import Post
 from tatd_bot.vk.services import VkFeedService
 

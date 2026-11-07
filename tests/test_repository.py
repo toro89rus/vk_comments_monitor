@@ -5,7 +5,7 @@ from petrovich.enums import Gender
 
 from tatd_bot.config.config import RedisConfig
 from tatd_bot.repository import COMMENT_TTL, USER_TTL, create_redis_client
-from tatd_bot.tg.models.models import BotUser, BotUserStatus
+from tatd_bot.tg.models import BotUser, BotUserStatus
 
 DAY = 24 * 60 * 60
 
