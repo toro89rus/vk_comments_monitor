@@ -26,6 +26,7 @@ tatd_bot/
   bot.py              точка входа: собирает зависимости, запускает мониторинг и polling
   config/config.py    AppConfig из переменных окружения; load_config() подгружает .env
   logger.py           настройка корневого логгера
+  monitor.py          VkCommentsMonitorService — цикл мониторинга vk → рассылка в tg
   repository.py       Repository — весь доступ к Redis (и для tg, и для vk)
   utils/time_utils.py unix-время → datetime в Europe/Moscow
   vk/
@@ -38,8 +39,7 @@ tatd_bot/
   tg/
     handlers/user.py  /start, «Подписаться», «Отписаться»
     handlers/admin.py разбор заявок администратором
-    services.py       VkCommentsMonitorService (цикл мониторинга и рассылка),
-                      TgSubscriptionService, BotUserService
+    services.py       TgSubscriptionService, BotUserService
     formatters.py     TgMessageFormatter — модели VK → текст сообщений
     models.py         BotUser, BotUserStatus
     mappers.py        aiogram User / Redis-хэш ↔ BotUser

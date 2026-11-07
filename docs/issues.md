@@ -20,8 +20,8 @@
 `TelegramForbiddenError` (например `TelegramRetryAfter`), роняет весь проход. Остальные подписчики сообщения
 уже получили, но `save_comments_cache` не вызывается. На следующем проходе все получат то же самое ещё раз.
 
-- Где: `VkCommentsMonitorService._notify_subscribers` / `_send_to_subscriber` (`tatd_bot/tg/services/services.py`).
-- Тест: `tests/tg/test_services.py::TestMonitor::test_other_telegram_error_aborts_pass_without_saving`.
+- Где: `VkCommentsMonitorService._notify_subscribers` / `_send_to_subscriber` (`tatd_bot/monitor.py`).
+- Тест: `tests/test_monitor.py::TestMonitor::test_other_telegram_error_aborts_pass_without_saving`.
 
 ### B2. «Комментарий от None» · средний
 
@@ -40,7 +40,7 @@
 
 - Где: `TgMessageFormatter.format_comment` / `format_reply`, `VkCommentsMonitorService._send_to_subscriber`.
 - Тесты: `tests/tg/test_formatters.py::test_format_comment_escapes_html`,
-  `tests/tg/test_services.py::TestMonitor::test_only_post_is_sent_as_html`.
+  `tests/test_monitor.py::TestMonitor::test_only_post_is_sent_as_html`.
 
 ### B4. Отфильтрованный комментарий с новыми ответами уходит пустым · низкий
 

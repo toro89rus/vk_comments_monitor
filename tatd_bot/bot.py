@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher
 
 from tatd_bot.config import load_config
 from tatd_bot.logger import setup_logger
+from tatd_bot.monitor import VkCommentsMonitorService
 from tatd_bot.repository import Repository, create_redis_client
 from tatd_bot.tg.formatters import TgMessageFormatter
 from tatd_bot.tg.handlers.admin import admin_router
@@ -11,7 +12,6 @@ from tatd_bot.tg.handlers.user import user_router
 from tatd_bot.tg.services import (
     BotUserService,
     TgSubscriptionService,
-    VkCommentsMonitorService,
 )
 from tatd_bot.vk.api import VkApiService
 from tatd_bot.vk.registry import AuthorsRegistry
