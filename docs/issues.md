@@ -23,16 +23,6 @@
 - Тесты: `tests/vk/test_models.py::TestUser::test_unknown_user`, `TestGroup::test_unknown_group`,
   `tests/tg/test_formatters.py::test_format_comment_author_name`.
 
-### B3. HTML-сущности в комментариях и ответах · средний
-
-Текст комментариев и ответов проходит `html.escape`, но отправляется без `parse_mode` (HTML включён только
-для поста). Скорее всего, подписчик видит `&amp;`, `&quot;` и т. п. вместо символов. Подтвердить можно
-только в настоящем Telegram.
-
-- Где: `TgMessageFormatter.format_comment` / `format_reply`, `VkCommentsMonitorService._send_to_subscriber`.
-- Тесты: `tests/tg/test_formatters.py::test_format_comment_escapes_html`,
-  `tests/test_monitor.py::TestMonitor::test_only_post_is_sent_as_html`.
-
 ### B4. Отфильтрованный комментарий с новыми ответами уходит пустым · низкий
 
 Если текст комментария отфильтрован (например «Спасибо!»), но под ним есть новые ответы, подписчику

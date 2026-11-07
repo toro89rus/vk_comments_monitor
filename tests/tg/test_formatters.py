@@ -55,12 +55,16 @@ def test_format_comment(formatter):
     )
 
 
-def test_format_comment_escapes_html(formatter):
-    comment = Comment(1, CREATED_AT, IVAN, "Tom & Jerry", [], True)
+def test_format_comment_keeps_text_as_is(formatter):
+    comment = Comment(1, CREATED_AT, IVAN, "<b>Tom & Jerry</b>", [], True)
 
-    # текущее поведение: комментарии отправляются без parse_mode,
-    # поэтому подписчик видит &amp; как есть
-    assert formatter.format_comment(comment).endswith("\n\nTom &amp; Jerry")
+    assert formatter.format_comment(comment).endswith("\n\n<b>Tom & Jerry</b>")
+
+
+def test_format_reply_keeps_text_as_is(formatter):
+    reply = Reply(2, CREATED_AT, MARIA, "Tom & Jerry", IVAN)
+
+    assert formatter.format_reply(reply).endswith("\n\nTom & Jerry")
 
 
 @pytest.mark.parametrize(

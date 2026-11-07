@@ -21,11 +21,12 @@ class TgMessageFormatter:
         formatted_date = self._format_date(post.created_at)
         return f"{link_tag} от {formatted_date}\n{shortened_text}"
 
+    # Комментарии и ответы уходят без parse_mode, поэтому текст не экранируется
     def format_comment(self, comment: Comment) -> str:
         return (
             f"{self._format_datetime(comment.created_at)}\n"
             f"Комментарий от {comment.author.name_gen}\n\n"
-            f"{html.escape(comment.text)}"
+            f"{comment.text}"
         )
 
     def format_reply(self, reply: Reply) -> str:
@@ -34,5 +35,5 @@ class TgMessageFormatter:
         return (
             f"{self._format_datetime(reply.created_at)}\n"
             f"Ответ для {reply_to_name} от {author_name} \n\n"
-            f"{html.escape(reply.text)}"
+            f"{reply.text}"
         )
