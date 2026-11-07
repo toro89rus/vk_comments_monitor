@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 class VkAuthorService:
-
     def __init__(self, registry: AuthorsRegistry, repo: Repository):
         self.registry = registry
         self.repo = repo
@@ -88,7 +87,6 @@ class VkAuthorService:
 
 
 class VkMessageService:
-
     def __init__(self, author_service: VkAuthorService, repo: Repository):
         self.author_service = author_service
         self.repo = repo
@@ -122,14 +120,11 @@ class VkMessageService:
         return {
             "id": data["id"],
             "created_at": get_msk_time(data["date"]),
-            "author": self.author_service.get_or_create_author(
-                data["from_id"]
-            ),
+            "author": self.author_service.get_or_create_author(data["from_id"]),
         }
 
 
 class VkFeedService:
-
     def __init__(
         self,
         api: VkApiService,
@@ -206,12 +201,18 @@ class VkFeedService:
         for post in posts:
             for comment in post.comments:
                 if not comment.author.name:
-                    author_type_mapping[comment.author.kind].add(comment.author.id)
+                    author_type_mapping[comment.author.kind].add(
+                        comment.author.id
+                    )
                 for reply in comment.replies:
                     if not reply.author.name:
-                        author_type_mapping[reply.author.kind].add(reply.author.id)
+                        author_type_mapping[reply.author.kind].add(
+                            reply.author.id
+                        )
                     if not reply.reply_to.name:
-                        author_type_mapping[reply.reply_to.kind].add(reply.reply_to.id)
+                        author_type_mapping[reply.reply_to.kind].add(
+                            reply.reply_to.id
+                        )
 
         return {"users_ids": users_ids, "groups_ids": groups_ids}
 

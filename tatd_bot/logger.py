@@ -2,7 +2,6 @@ import logging
 
 
 def setup_logger(log_format: str, env: str) -> logging.Logger:
-
     logger = logging.getLogger()
 
     std_out_handler = logging.StreamHandler()

@@ -6,7 +6,6 @@ from tatd_bot.vk.models import Comment, Post, Reply
 
 
 class TgMessageFormatter:
-
     def __init__(self, config: AppConfig):
         self.config = config
 

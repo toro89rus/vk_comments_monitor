@@ -36,9 +36,7 @@ async def process_start(
         if user.id == config.tg.admin_id
         else KEYBOARDS.USER_SUBSCRIBE
     )
-    await message.answer(
-        text=LEXICON.Message.WELCOME, reply_markup=keyboard
-    )
+    await message.answer(text=LEXICON.Message.WELCOME, reply_markup=keyboard)
 
 
 @user_router.message(F.text == LEXICON.Button.SUBSCRIBE)

@@ -3,7 +3,30 @@ line-length = 80
 [lint.per-file-ignores]
   # init modules can contain the local imports, logic, unused imports
 "__init__.py" = ["F401"]
+  # magic values in asserts are fine
+"tests/**" = ["PLR2004"]
 
 [lint]
 preview = true
-select = ["E", "F", "I", "C90"]
+select = [
+    "E",
+    "F",
+    "I",
+    "C90",     # complexity
+    "PLR0912", # too many branches
+    "PLR0915", # too many statements
+    "PLR1702", # too many nested blocks
+    "PLR2004", # magic values
+    "BLE001",  # blind except Exception
+    "S110",    # try-except-pass
+    "ERA001",  # commented-out code
+    "ASYNC",   # blocking calls in async code
+]
+
+[lint.mccabe]
+max-complexity = 15
+
+[lint.pylint]
+max-branches = 15
+max-statements = 50
+max-nested-blocks = 4

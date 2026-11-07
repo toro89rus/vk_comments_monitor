@@ -20,7 +20,6 @@ COMMENT_TTL = 8 * 24 * 60 * 60
 
 
 class Repository:
-
     def __init__(self, redis_host):
         self.r = redis.Redis(host=redis_host, port=6379, decode_responses=True)
 

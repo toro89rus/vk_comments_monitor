@@ -35,7 +35,7 @@ async def main():
     )
 
     new_vk_comments = feed_service.get_new_comments()
-    if new_vk_comments:
+    if new_vk_comments:  # noqa: PLR1702
         logger.info(
             "Collected %s posts with new comments", len(new_vk_comments)
         )

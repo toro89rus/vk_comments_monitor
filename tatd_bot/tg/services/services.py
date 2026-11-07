@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class VkCommentsMonitorService:
-
     def __init__(
         self,
         config: AppConfig,
@@ -106,7 +105,6 @@ class UnsubscribeResult(Enum):
 
 
 class TgSubscriptionService:
-
     def __init__(self, config: AppConfig, repo: Repository):
         self.config = config
         self.repo = repo
@@ -153,7 +151,6 @@ class TgSubscriptionService:
 
 
 class BotUserService:
-
     def __init__(self, repo: Repository):
         self.repo = repo
 

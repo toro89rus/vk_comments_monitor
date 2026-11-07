@@ -15,9 +15,7 @@ class Message:
     SUB_APPLICATION_ACCEPTED = (
         "Заявка одобрена. Я сообщу, когда появятся новые комментарии"
     )
-    SUB_APPLICATION_DECLINED = (
-        "Заявка отклонена."
-    )
+    SUB_APPLICATION_DECLINED = "Заявка отклонена."
     ALREADY_SUBBED = "Подписка уже активна"
     ALREADY_PENDING = "Ваша заявка в обработке, подождите пожалуйста"
     NOT_SUBBED = "Вы не подписаны"

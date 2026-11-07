@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class VkApiService:
-
     def __init__(self, config: AppConfig):
         self.api_version = config.vk.api_version
         self.vk_url = config.vk.vk_url
@@ -102,9 +101,7 @@ class VkApiService:
         return api_response.get("response", [])
 
     def get_groups_names(self, group_ids: set | list) -> list[dict]:
-        api_response = self._make_vk_call(
-            "groups.getById", group_ids=group_ids
-        )
+        api_response = self._make_vk_call("groups.getById", group_ids=group_ids)
         if not api_response or "response" not in api_response:
             return []
         return api_response["response"].get("groups", [])

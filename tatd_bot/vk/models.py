@@ -54,7 +54,7 @@ class User:
             first = p.firstname(self.first_name, case, self.gender)
             last = p.lastname(self.last_name, case, self.gender)
             return f"{first} {last}"
-        except Exception:
+        except Exception:  # noqa: BLE001
             return self.name
 
     @property
