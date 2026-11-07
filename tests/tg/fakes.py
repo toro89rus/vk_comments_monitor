@@ -17,12 +17,15 @@ class SentMessage:
 
 class FakeBot:
     """Запоминает отправленные сообщения. Чатам из blocked_by отвечает
-    TelegramForbiddenError, чатам из errors — заданным исключением."""
+    TelegramForbiddenError, чатам из errors — заданным исключением на каждую
+    отправку, чатам из pending_errors — исключениями из списка по одному на
+    отправку, пока список не кончится."""
 
     def __init__(self):
         self.sent: list[SentMessage] = []
         self.blocked_by: set[int] = set()
         self.errors: dict[int, Exception] = {}
+        self.pending_errors: dict[int, list[Exception]] = {}
 
     async def send_message(
         self,
@@ -38,6 +41,8 @@ class FakeBot:
             )
         if chat_id in self.errors:
             raise self.errors[chat_id]
+        if self.pending_errors.get(chat_id):
+            raise self.pending_errors[chat_id].pop(0)
         self.sent.append(SentMessage(chat_id, text, reply_markup, parse_mode))
 
     def texts_for(self, chat_id: int) -> list[str]:
