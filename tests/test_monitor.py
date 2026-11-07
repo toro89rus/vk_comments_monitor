@@ -115,7 +115,6 @@ class TestMonitor:
 
         await run_one_pass(monitor_service)
 
-        # текущее поведение: комментарии и ответы — без parse_mode
         assert [m.parse_mode for m in bot.sent] == ["html", None, None, None]
 
     async def test_sends_to_every_subscriber_and_saves_cache(

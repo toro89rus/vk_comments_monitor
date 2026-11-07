@@ -39,14 +39,15 @@ class TestUser:
 
         assert user.name is None
         assert str(user) == "Неизвестный пользователь"
-        # текущее поведение: в сообщение попадает None
-        assert user.name_gen is None
+        assert user.name_gen == "неизвестного пользователя"
+        assert user.name_dat == "неизвестному пользователю"
 
     def test_user_with_only_first_name_has_no_name(self):
         user = User(1, "Иван")
 
         assert user.name is None
         assert str(user) == "Неизвестный пользователь"
+        assert user.name_gen == "неизвестного пользователя"
 
     def test_update_overwrites_only_non_empty_fields(self):
         user = User(1, "Иван", "Петров", Gender.MALE)
@@ -72,8 +73,8 @@ class TestGroup:
         group = Group(5)
 
         assert str(group) == "Неизвестная группа"
-        # текущее поведение: в сообщение попадает None
-        assert group.name_gen is None
+        assert group.name_gen == "неизвестной группы"
+        assert group.name_dat == "неизвестной группе"
 
     def test_update_ignores_empty_name(self):
         group = Group(5, "Театр")
