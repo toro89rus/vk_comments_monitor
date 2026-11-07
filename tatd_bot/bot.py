@@ -15,6 +15,7 @@ from tatd_bot.tg.services import (
     TgSubscriptionService,
 )
 from tatd_bot.vk.api import VkApiService
+from tatd_bot.vk.migrations.runner import run_migrations
 from tatd_bot.vk.registry import AuthorsRegistry
 from tatd_bot.vk.repository import VkRepository
 from tatd_bot.vk.services import (
@@ -30,6 +31,7 @@ async def run_bot():
     logger.info("Bot started")
 
     redis_client = create_redis_client(config.redis)
+    await run_migrations(redis_client)
     tg_repo = TgRepository(redis_client)
     vk_repo = VkRepository(redis_client)
     tatd_bot = Bot(token=config.tg.token)
