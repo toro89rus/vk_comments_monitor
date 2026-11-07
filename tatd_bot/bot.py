@@ -61,7 +61,10 @@ async def run_bot():
     dp.include_router(admin_router)
 
     asyncio.create_task(vk_monitor_service.monitor())
-    await dp.start_polling(tatd_bot)
+    try:
+        await dp.start_polling(tatd_bot)
+    finally:
+        await vk_api_service.close()
 
 
 if __name__ == "__main__":

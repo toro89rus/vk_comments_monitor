@@ -5,6 +5,7 @@ groups.getById), а не сняты с настоящего API: токен VK �
 Поля — те, что читает код, плюс несколько соседних для правдоподобия.
 """
 
+import asyncio
 import time
 
 GROUP_ID = -48164678
@@ -115,18 +116,32 @@ class FakeVkApi:
         self.comments_requests: list[int] = []
         self.users_requests: list[set[int]] = []
         self.groups_requests: list[set[int]] = []
+        self.in_flight = 0
+        self.max_in_flight = 0
 
-    def get_posts(self, count: int = 20) -> list[dict]:
+    async def _request(self) -> None:
+        # имитирует ожидание ответа: даёт event loop переключиться на другие
+        # задачи, чтобы параллельные запросы были видны в max_in_flight
+        self.in_flight += 1
+        self.max_in_flight = max(self.max_in_flight, self.in_flight)
+        await asyncio.sleep(0)
+        self.in_flight -= 1
+
+    async def get_posts(self, count: int = 20) -> list[dict]:
+        await self._request()
         return self.posts
 
-    def get_comments(self, post_id: int, **kwargs) -> list[dict]:
+    async def get_comments(self, post_id: int, **kwargs) -> list[dict]:
+        await self._request()
         self.comments_requests.append(post_id)
         return self.comments.get(post_id, [])
 
-    def get_users_names(self, users_id: set | list) -> list[dict]:
+    async def get_users_names(self, users_id: set | list) -> list[dict]:
+        await self._request()
         self.users_requests.append(set(users_id))
         return [user for user in self.users if user["id"] in users_id]
 
-    def get_groups_names(self, group_ids: set | list) -> list[dict]:
+    async def get_groups_names(self, group_ids: set | list) -> list[dict]:
+        await self._request()
         self.groups_requests.append(set(group_ids))
         return [group for group in self.groups if group["id"] in group_ids]

@@ -16,6 +16,8 @@ class VkConfig:
     vk_url: str = "https://api.vk.ru/method"
     api_version: str = "5.199"
     update_delay: int = 300
+    # не больше ~3 запросов в секунду: лимит VK для пользовательского токена
+    request_interval: float = 0.35
 
     @property
     def group_link(self):
