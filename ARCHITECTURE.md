@@ -158,8 +158,8 @@ TTL комментариев (8 дней) больше окна монитори
 - Работает только на сервере через Docker Compose. Локально проект не запускается: нет локального окружения
   и тестовых токенов.
 - В контейнере: `make run` → `tatd_bot.bot`. Это один долгоживущий процесс: polling бота плюс бесконечный
-  цикл мониторинга. Образ — `python:3.12-slim-trixie` + `uv:latest`. `redis:latest` без
-  фиксации версии.
+  цикл мониторинга. Образ — `python:3.12-slim-trixie` + `uv` 0.5.13 (как в CI),
+  зависимости ставятся отдельным слоем до копирования кода. `redis:latest` без фиксации версии.
 - Деплой: `deploy.sh` на сервере (`/home/toro/vk_comments_monitor`) по крону. Если `origin/main` ушёл
   вперёд — `git pull` и `docker compose up -d --build tatd_bot`. Пуш в `main` = деплой.
 - Проверки: `make check` — `ruff format --check`, `ruff check`, `pytest` (по отдельности: `make format`,
