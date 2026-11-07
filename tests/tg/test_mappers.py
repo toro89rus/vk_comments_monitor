@@ -1,7 +1,7 @@
 import pytest
 from aiogram.types import User
 
-from tatd_bot.tg.mappers.mappers import (
+from tatd_bot.tg.mappers import (
     map_bot_user_to_redis,
     map_redis_to_bot_user,
     map_tg_to_bot_user,

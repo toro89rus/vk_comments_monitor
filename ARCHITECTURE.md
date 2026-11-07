@@ -42,7 +42,7 @@ tatd_bot/
                       TgSubscriptionService, BotUserService
     formatters.py     TgMessageFormatter — модели VK → текст сообщений
     models.py         BotUser, BotUserStatus
-    mappers/mappers.py aiogram User / Redis-хэш ↔ BotUser
+    mappers.py        aiogram User / Redis-хэш ↔ BotUser
     lexicon.py        тексты кнопок и сообщений
     keyboards/        reply-клавиатуры
     filters/          IsAdmin

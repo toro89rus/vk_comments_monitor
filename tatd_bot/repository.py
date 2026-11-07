@@ -3,7 +3,7 @@ import time
 import redis
 
 from tatd_bot.config.config import RedisConfig
-from tatd_bot.tg.mappers.mappers import (
+from tatd_bot.tg.mappers import (
     map_bot_user_to_redis,
     map_redis_to_bot_user,
 )
