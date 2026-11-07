@@ -3,8 +3,6 @@ from dataclasses import dataclass
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 DATE_FORMAT = "%d.%m.%Y"
 DATETIME_FORMAT = "%d.%m.%Y %H:%M"
 LOG_FORMAT = "[{asctime}] #{levelname:8} - {name} - {message}"

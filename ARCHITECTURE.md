@@ -24,7 +24,7 @@ Telegram-бот для сотрудников театра (группа VK `tul
 ```
 tatd_bot/
   bot.py              точка входа: собирает зависимости, запускает мониторинг и polling
-  config/config.py    AppConfig из переменных окружения (.env через dotenv)
+  config/config.py    AppConfig из переменных окружения; load_config() подгружает .env
   logger.py           настройка корневого логгера
   repository.py       Repository — весь доступ к Redis (и для tg, и для vk)
   utils/time_utils.py unix-время → datetime в Europe/Moscow
