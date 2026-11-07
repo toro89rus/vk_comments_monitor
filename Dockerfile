@@ -4,7 +4,8 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 ENV PYTHONUNBUFFERED=1
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# та же версия uv, что в CI и локально
+COPY --from=ghcr.io/astral-sh/uv:0.5.13 /uv /uvx /bin/
 
 COPY . /tatd_bot/
 
