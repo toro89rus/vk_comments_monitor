@@ -35,7 +35,6 @@ tatd_bot/
     mappers.py        JSON VK → модели
     text_formatting.py фильтрация текста комментариев («спасибо», поздравления, пустые)
     services.py       VkAuthorService, VkMessageService, VkFeedService
-    migrations/       разовые скрипты миграции данных Redis
   tg/
     handlers/user.py  /start, «Подписаться», «Отписаться»
     handlers/admin.py разбор заявок администратором
@@ -48,8 +47,6 @@ tatd_bot/
     keyboards/        reply-клавиатуры
     filters/          IsAdmin
     states/           AdminStates (FSM)
-scripts/vk_comments_monitor.py  остаток прежней схемы: разовый прогон мониторинга по крону
-                                (дублирует VkCommentsMonitorService, сейчас не используется)
 ```
 
 Вне git (в `.gitignore`) лежит `ya_maps_monitor` — мониторинг отзывов на Яндекс Картах. Эта часть заморожена,
@@ -139,10 +136,10 @@ TTL комментариев (8 дней) больше окна монитори
 
 ## Миграции
 
-`tatd_bot/vk/migrations/` — разовые скрипты, запускались вручную. Учёта применённых миграций нет.
-`redis_migration_001*` и `002` в текущем виде не запускаются: они импортируют уже несуществующие
-`repository.r` и `tatd_bot.logger.logger`. `003`–`005` ходят в Redis на `localhost`, без конфига.
-`004` пишет ключ `group:{id}`, а код читает `group:{id}:name`. Схема ключей менялась после миграции.
+Миграций в коде сейчас нет. Прежние разовые скрипты `001`–`005` уже применены и удалены, они остались
+в истории git (последний коммит с ними — `c5a21ea`). Учёта применённых миграций нет. Новая миграция —
+`tatd_bot/vk/migrations/redis_migration_006*.py`. Общий запуск с конфигом и учётом применённых
+делается отдельной задачей, вместе с первой новой миграцией.
 
 ## Конфигурация
 
@@ -159,9 +156,6 @@ TTL комментариев (8 дней) больше окна монитори
   фиксации версии.
 - Деплой: `deploy.sh` на сервере (`/home/toro/vk_comments_monitor`) по крону. Если `origin/main` ушёл
   вперёд — `git pull` и `docker compose up -d --build tatd_bot`. Пуш в `main` = деплой.
-- `make start-vk` / `cron-vk_monitor` запускают `scripts/vk_comments_monitor.py` — остаток схемы до
-  перехода на aiogram 3 (`f2d8b18`), когда мониторинг запускался по крону. Compose его не вызывает.
-  Цели `start-ya_maps` / `cron-ya_maps` ссылаются на модуль, которого нет в git.
 - Проверки: `make check` — `ruff format --check`, `ruff check`, `pytest` (по отдельности: `make format`,
   `make lint`, `make test`). Тесты — `tests/` (pytest, pytest-asyncio в режиме auto, fakeredis).
   Старые нарушения правил ruff помечены `# noqa`.
