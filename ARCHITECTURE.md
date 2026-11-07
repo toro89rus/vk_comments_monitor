@@ -17,7 +17,8 @@ Telegram-бот для сотрудников театра (группа VK `tul
   Клиент синхронный (`redis.Redis`).
 - VK API — `aiohttp`, async, версия API 5.199. Запросы к VK идут строго по одному (у VK лимит частоты):
   async нужен, чтобы проход мониторинга не блокировал бота, а не для параллельных запросов. Это закреплено
-  тестом `TestVkRequestsAreSequential`.
+  тестом `TestVkRequestsAreSequential`. Сам клиент тоже пропускает запросы по одному (`asyncio.Lock`) и
+  не чаще `VkConfig.request_interval` (0,35 с, меньше 3 запросов в секунду).
 - petrovich — склонение имён авторов («Комментарий от Ивана Петрова»).
 - Запуск — Docker Compose: контейнеры `tatd_bot` и `redis` (данные в volume `redis_data`).
 

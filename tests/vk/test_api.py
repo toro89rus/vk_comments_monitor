@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
 import pytest
@@ -191,3 +191,82 @@ class TestSession:
 
     async def test_close_without_session(self, app_config):
         await VkApiService(app_config).close()
+
+
+@pytest.fixture
+def clock():
+    # подменяется ссылка на модуль time внутри api, а не time.monotonic:
+    # на нём работают часы event loop
+    with (
+        patch("tatd_bot.vk.api.time") as fake_time,
+        patch("tatd_bot.vk.api.asyncio.sleep", new=AsyncMock()) as sleep,
+    ):
+        yield fake_time.monotonic, sleep
+
+
+class TestRateLimit:
+    def test_default_interval_keeps_under_3_requests_per_second(self, api):
+        assert api.request_interval > 1 / 3
+
+    async def test_first_request_does_not_wait(self, api, clock):
+        monotonic, sleep = clock
+        monotonic.return_value = 100.0
+
+        await api.get_posts()
+
+        sleep.assert_not_awaited()
+
+    async def test_next_request_waits_rest_of_interval(self, api, clock):
+        monotonic, sleep = clock
+        # конец первого запроса, проверка перед вторым, конец второго
+        monotonic.side_effect = [100.0, 100.1, 100.35]
+
+        await api.get_posts()
+        await api.get_posts()
+
+        sleep.assert_awaited_once()
+        assert sleep.await_args.args[0] == pytest.approx(0.25)
+
+    async def test_no_wait_after_interval_passed(self, api, clock):
+        monotonic, sleep = clock
+        monotonic.side_effect = [100.0, 101.0, 101.0]
+
+        await api.get_posts()
+        await api.get_posts()
+
+        sleep.assert_not_awaited()
+
+    async def test_failed_request_counts_for_interval(
+        self, api, http_get, clock
+    ):
+        monotonic, sleep = clock
+        monotonic.side_effect = [100.0, 100.1, 100.35]
+        http_get.side_effect = [
+            aiohttp.ClientConnectionError("dns"),
+            vk_response({"response": {"items": []}}),
+        ]
+
+        await api.get_posts()
+        await api.get_posts()
+
+        sleep.assert_awaited_once()
+
+    async def test_concurrent_calls_are_serialized(self, api, http_get):
+        api.request_interval = 0
+        in_flight = 0
+        max_in_flight = 0
+
+        async def slow_json(content_type=None):
+            nonlocal in_flight, max_in_flight
+            in_flight += 1
+            max_in_flight = max(max_in_flight, in_flight)
+            await asyncio.sleep(0)
+            in_flight -= 1
+            return {"response": {"items": []}}
+
+        http_get.return_value.json = slow_json
+
+        await asyncio.gather(api.get_posts(), api.get_posts(), api.get_posts())
+
+        assert http_get.call_count == 3
+        assert max_in_flight == 1

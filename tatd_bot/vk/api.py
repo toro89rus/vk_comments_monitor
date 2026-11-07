@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import time
 
 import aiohttp
 
@@ -18,6 +20,9 @@ class VkApiService:
         self.token = config.vk.token
         self.group_id = config.vk.group_id
         self._session = session
+        self.request_interval = config.vk.request_interval
+        self._request_lock = asyncio.Lock()
+        self._last_request_at: float | None = None
 
     def _get_session(self) -> aiohttp.ClientSession:
         # сессию создаём внутри работающего event loop, при первом запросе
@@ -37,10 +42,7 @@ class VkApiService:
             if isinstance(value, (list, tuple, set)):
                 params[key] = ",".join(map(str, value))
         try:
-            async with self._get_session().get(
-                url, params=params, timeout=REQUEST_TIMEOUT
-            ) as r:
-                vk_response = await r.json(content_type=None)
+            vk_response = await self._get_json(url, params)
         except Exception:
             logger.exception("VK API network error while calling %s", method)
             return {}
@@ -60,6 +62,25 @@ class VkApiService:
             return {}
 
         return vk_response
+
+    async def _get_json(self, url: str, params: dict) -> dict:
+        # запросы к VK идут по одному и не чаще request_interval
+        async with self._request_lock:
+            await self._wait_for_rate_limit()
+            try:
+                async with self._get_session().get(
+                    url, params=params, timeout=REQUEST_TIMEOUT
+                ) as r:
+                    return await r.json(content_type=None)
+            finally:
+                self._last_request_at = time.monotonic()
+
+    async def _wait_for_rate_limit(self) -> None:
+        if self._last_request_at is None:
+            return
+        elapsed = time.monotonic() - self._last_request_at
+        if elapsed < self.request_interval:
+            await asyncio.sleep(self.request_interval - elapsed)
 
     async def get_posts(self, count=20) -> list[dict]:
         api_response = await self._make_vk_call(
